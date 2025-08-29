@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fffafa"
+    tools:context=".Customer">
+
+    <!-- Logo and App Name -->
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="148dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="18dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/logo2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@id/logo"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavc">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Order Water Section -->
+            <ImageView
+                android:id="@+id/orderWaterCard"
+                android:layout_width="match_parent"
+                android:layout_height="115dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/quickor"
+                android:contentDescription="Order Water"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:scaleType="fitCenter"/>
+
+            <!-- Products Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="20dp">
+
+                <!-- Refill Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Refill:"
+                    android:textColor="#1b5692"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Refill Images Row 1 (2 items) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:id="@+id/prefilla"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/prefilla"
+                        android:contentDescription="Refill Alkaline 20L"
+                        android:layout_marginEnd="28dp"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                    <ImageView
+                        android:id="@+id/prefillm"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/prefillm"
+                        android:contentDescription="Refill Mineral 20L"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+
+                <!-- Refill Images Row 2 (2 items) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageView
+                        android:id="@+id/prefillas"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/prefillas"
+                        android:contentDescription="Refill Alkaline 10L"
+                        android:layout_marginEnd="28dp"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                    <ImageView
+                        android:id="@+id/prefillms"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/prefillms"
+                        android:contentDescription="Refill Mineral 10L"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+
+                <!-- Items Header -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                    android:text="Items:"
+                    android:textColor="#1b5692"
+                    android:textSize="14sp"
+                        android:textStyle="bold"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Items Images Row 1 (2 items) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:id="@+id/pnews"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/pnews"
+                        android:contentDescription="New Slim Gallon"
+                        android:layout_marginEnd="28dp"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                    <ImageView
+                        android:id="@+id/pnewr"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/pnewr"
+                        android:contentDescription="New Round Gallon"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+
+                <!-- Items Images Row 2 (2 items) -->
+                <LinearLayout
+                android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageView
+                        android:id="@+id/pbcap"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/pbcap"
+                        android:contentDescription="Big Cap Cover"
+                        android:layout_marginEnd="28dp"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                    <ImageView
+                        android:id="@+id/pscap"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/pscap"
+                        android:contentDescription="Non-leak Cover"
+                        android:scaleType="fitCenter"
+                android:clickable="true"
+                android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+
+                <!-- Items Images Row 3 (2 items) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageView
+                        android:id="@+id/prcap"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/prcap"
+                        android:contentDescription="Round Cap Cover"
+                        android:layout_marginEnd="28dp"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                    <ImageView
+                        android:id="@+id/pnscap"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/pnscap"
+                        android:contentDescription="New Small Cap"
+                        android:scaleType="fitCenter"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1b5692"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:itemIconTint="#fffafa"
+        app:itemTextColor="#fffafa"
+        app:itemIconSize="24dp"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_navmenuc" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

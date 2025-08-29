@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fffafa"
+    tools:context=".Sales">
+
+    <!-- Logo and App Name -->
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="148dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="18dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/logo2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/salesTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:text="Sales Report"
+        android:textStyle="bold"
+        android:textColor="#1b5692"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/logo"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/salesTitle"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Report Type Selection -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/reportTypeCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#1b5692">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="5dp"
+                    android:paddingBottom="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Select Report Type"
+                        android:textColor="#ffffff"
+                        android:textSize="14sp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginTop="6dp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/reportTypeSpinner"
+                        android:layout_width="100dp"
+                        android:layout_height="35dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="6dp"
+                        android:background="@drawable/custom_dropdown"
+                        android:spinnerMode="dropdown"
+                        android:popupBackground="#ffffff"
+                        android:popupElevation="8dp"
+                        android:overlapAnchor="false" />
+
+                    <CalendarView
+                        android:id="@+id/calendarView"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:layout_marginTop="8dp"
+                        android:textColor="#ffff" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Report Table -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/reportCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#1b5692">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/reportPeriod"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Report for: April 17, 2024"
+                        android:textColor="#ffffff"
+                        android:textSize="14sp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginTop="6dp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- Table Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="#1b5692"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.4"
+                            android:text="UOM"
+                            android:textColor="#ffffff"
+                            android:textSize="11sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.6"
+                            android:text="Quantity"
+                            android:textSize="11sp"
+                            android:textColor="#ffffff"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.7"
+                            android:text="Revenue"
+                            android:textColor="#ffffff"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Most Ordered"
+                            android:textColor="#ffffff"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+                    </LinearLayout>
+
+                    <!-- Table Content -->
+                    <LinearLayout
+                        android:id="@+id/reportTableContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"/>
+
+                    <!-- Total Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="8dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#f5f5f5">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.4"
+                            android:text="Total:"
+                            android:textStyle="bold"
+                            android:textColor="#1b5692"
+                            android:textSize="11sp"/>
+
+                        <TextView
+                            android:id="@+id/totalQuantity"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.6"
+                            android:textColor="#1b5692"
+                            android:textSize="11sp"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:id="@+id/totalRevenue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="#1b5692"
+                            android:textSize="11sp"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.5"
+                            android:gravity="center"/>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1b5692"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:itemIconTint="#fffafa"
+        app:itemTextColor="#fffafa"
+        app:menu="@menu/bottom_navmenu" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

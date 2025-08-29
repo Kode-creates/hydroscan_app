@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#ffffff"
+    android:minWidth="300dp"
+    android:gravity="center_horizontal">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="QR Code"
+        android:textColor="#1b5692"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp"/>
+
+    <ImageView
+        android:id="@+id/qrCodeImage"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@drawable/genqrr"
+        android:contentDescription="Generated QR Code"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Name under QR -->
+    <TextView
+        android:id="@+id/qrNameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#1b5692"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Save to Device Button -->
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Save to Device"
+        android:textSize="14sp"
+        android:textColor="#ffffff"
+        android:backgroundTint="#1b5692"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Check Icon Button -->
+    <ImageButton
+        android:id="@+id/checkIconButton"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/checkicon"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Add as Order"
+        android:scaleType="fitCenter"
+        android:padding="8dp"/>
+
+</LinearLayout> 

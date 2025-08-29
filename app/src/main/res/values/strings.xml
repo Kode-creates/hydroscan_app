@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HydroScan</string>
+
+    <!-- Today Screen -->
+    <string name="orders_today">Orders today</string>
+    <string name="name">Name</string>
+    <string name="uom">UOM</string>
+    <string name="wt">WT</string>
+    <string name="qty">Qty</string>
+    <string name="total">Total</string>
+    <string name="status">Status</string>
+    <string name="summary">Summary</string>
+    <string name="completed">Completed:</string>
+    <string name="payment_status">Payment Status</string>
+    <string name="paid">Paid</string>
+    <string name="unpaid">Unpaid</string>
+    <string name="add_order">Add Order</string>
+    <string name="water_type">Water Type</string>
+    <string name="quantity">Quantity</string>
+    <string name="grand_total">Grand Total:</string>
+    <string name="qty_label">QTY:</string>
+    <string name="uom_label">UOM:</string>
+    <string name="revenue_label">Revenue:</string>
+
+    <!-- Order Screen -->
+    <string name="order_history">Order History</string>
+    <string name="april">April</string>
+    <string name="april_17">April 17</string>
+    <string name="april_16">April 16</string>
+    <string name="april_15">April 15</string>
+    <string name="total_qty_34">Total Qty: 34</string>
+    <string name="total_sales_1296">Total Sales: ₱1,296</string>
+    <string name="total_quantity">Total Quantity:</string>
+    <string name="total_sales">Total Sales:</string>
+    <string name="customers">Customers</string>
+    <string name="close">Close</string>
+
+    <!-- Inventory Screen -->
+    <string name="inventory_title">Inventory</string>
+    <string name="gallon_section">Gallon:</string>
+    <string name="seal_section">Seal:</string>
+    <string name="cap_cover_section">Cap cover:</string>
+
+    <!-- Quantity Labels -->
+    <string name="qty_format">Qty: %1$d</string>
+    <string name="slim_gallon">Slim Gallon</string>
+    <string name="round_gallon">Round Gallon</string>
+    <string name="small_cap_seal">Small cap \nSeal</string>
+    <string name="big_cap_seal">Big cap \nSeal</string>
+    <string name="faucet_seal">Faucet \nSeal</string>
+    <string name="umbrella_seal">Umbrella \nSeal</string>
+    <string name="small_cap_cover">Small cap \nCover</string>
+    <string name="big_cap_cover">Big cap \nCover</string>
+    <string name="full_round_cover">Full round \nCover</string>
+    <string name="non_leak_cover">Non leak \nCover</string>
+
+    <!-- Add Dialog -->
+    <string name="add_item">Add Item</string>
+    <string name="add_item_format">Add %1$s</string>
+    <string name="select_type">Select Type:</string>
+    <string name="quantity_label">Quantity:</string>
+    <string name="quantity_hint">Enter quantity</string>
+    <string name="cancel">Cancel</string>
+    <string name="add">Add</string>
+    <string name="please_enter_quantity">Please enter a quantity</string>
+
+    <!-- Content Descriptions -->
+    <string name="add_gallon_button">Add Gallon</string>
+    <string name="add_seal_button">Add Seal</string>
+    <string name="add_cap_cover_button">Add Cap Cover</string>
+    <string name="logo_description">HydroScan Logo</string>
+</resources>

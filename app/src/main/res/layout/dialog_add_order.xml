@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#f3f2f2"
+    android:minWidth="340dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_order"
+        android:textColor="#1b5692"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="5dp"/>
+
+    <!-- Name Input -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name*"
+        android:textColor="#1b5692"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/nameInput"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter Name"
+        android:layout_marginLeft="25dp"
+        android:textColorHint="#7F1B5692"
+        android:textColor="#1b5692"
+        android:backgroundTint="#1b5692"
+        android:textSize="10sp"
+        android:layout_marginBottom="5dp"/>
+
+    <!-- Address Input -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Address*"
+        android:textColor="#1b5692"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="25dp"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/addressInput"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter Address"
+        android:layout_marginLeft="25dp"
+        android:textColorHint="#801B5692"
+        android:textColor="#1b5692"
+        android:backgroundTint="#1b5692"
+        android:textSize="10sp"
+        android:layout_marginBottom="5dp"/>
+
+    <!-- Quantity Input -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quantity*"
+        android:textColor="#1b5692"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="25dp"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/quantityInput"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter Quantity"
+        android:inputType="number"
+        android:textColorHint="#801B5692"
+        android:textColor="#1b5692"
+        android:backgroundTint="#1b5692"
+        android:textSize="10sp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginBottom="5dp"/>
+
+    <!-- UOM Spinner -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="UOM*"
+        android:textColor="#1b5692"
+        android:layout_marginBottom="4dp"
+        android:layout_marginLeft="26dp"
+        android:textSize="10sp"
+        android:textStyle="bold"/>
+
+    <Spinner
+        android:id="@+id/uomSpinner"
+        android:layout_width="180dp"
+        android:layout_height="40dp"
+        android:layout_marginLeft="26dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/custom_dropdown"
+        android:spinnerMode="dropdown"
+        android:popupBackground="#ffffff"
+        android:popupElevation="8dp"
+        android:overlapAnchor="false"/>
+
+    <!-- Water Type Spinner -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Water Type*"
+        android:textColor="#1b5692"
+        android:textSize="10sp"
+        android:layout_marginLeft="26dp"
+        android:layout_marginBottom="4dp"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/waterTypeSpinner"
+        android:layout_width="180dp"
+        android:layout_height="40dp"
+        android:layout_marginLeft="26dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/custom_dropdown"
+        android:spinnerMode="dropdown"
+        android:popupBackground="#ffffff"
+        android:popupElevation="8dp"
+        android:overlapAnchor="false" />
+
+    <!-- Payment Status -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Payment Status*"
+        android:textColor="#1b5692"
+        android:textStyle="bold"
+        android:layout_marginLeft="26dp"
+        android:layout_marginBottom="4dp"
+        android:textSize="10sp"/>
+
+    <RadioGroup
+        android:id="@+id/paymentStatusGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="31dp"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <RadioButton
+            android:id="@+id/paidRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/paid"
+            android:textSize="10sp"
+            android:layout_marginEnd="16dp"
+            android:textColor="#1b5692"
+            android:buttonTint="#1b5692"/>
+
+        <RadioButton
+            android:id="@+id/unpaidRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:text="@string/unpaid"
+            android:textColor="#1b5692"
+            android:buttonTint="#1b5692"/>
+    </RadioGroup>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/addButton"
+            android:layout_width="200dp"
+            android:layout_height="45dp"
+            android:text="@string/add"
+            android:textSize="10sp"
+            android:backgroundTint="#1b5692"
+            android:layout_marginBottom="3dp"
+            android:textColor="#fffafa"
+            android:layout_gravity="center"/>
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="200dp"
+            android:layout_height="40dp"
+            android:textColor="#1b5692"
+            android:background="#97AAC5"
+            android:layout_gravity="center"
+            android:textSize="10sp"
+            android:text="@string/cancel"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+    </LinearLayout>
+
+</LinearLayout> 

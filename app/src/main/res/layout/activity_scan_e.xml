@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fffafa"
+    tools:context=".ScanE">
+
+    <!-- Logo and App Name -->
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="148dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="18dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/logo2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+        android:id="@+id/scantitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center_horizontal"
+        android:text="Scan QR Code"
+        android:textColor="#1b5692"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Camera Preview -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="238dp"
+        android:layout_height="245dp"
+        android:layout_margin="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scantitle" />
+
+    <!-- Scanning overlay -->
+    <ImageView
+        android:id="@+id/scanOverlay"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:src="@drawable/scan_frame"
+        app:layout_constraintTop_toTopOf="@id/viewFinder"
+        app:layout_constraintBottom_toBottomOf="@id/viewFinder"
+        app:layout_constraintStart_toStartOf="@id/viewFinder"
+        app:layout_constraintEnd_toEndOf="@id/viewFinder" />
+
+    <!-- Scanning instruction text -->
+    <TextView
+        android:id="@+id/scanInstruction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center_horizontal"
+        android:text="Place the QR Code within the frame"
+        android:textColor="#1b5692"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewFinder" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1b5692"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:itemIconTint="#fffafa"
+        app:itemTextColor="#fffafa"
+        app:menu="@menu/bottom_navmenue" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.adamson.fhydroscan">
+
+    <uses-feature android:name="android.hardware.camera" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FHydroScan"
+        tools:targetApi="31">
+        <activity
+            android:name=".Customer"
+            android:exported="true" />
+            <activity
+        android:name=".CusOrder"
+        android:exported="true" />
+    <activity
+        android:name=".OrderHistory"
+        android:exported="true" />
+    <activity
+        android:name=".ScanC"
+        android:exported="true" />
+    <activity
+        android:name=".Setting_C"
+        android:exported="true" />
+    <activity
+        android:name=".Cart"
+        android:exported="true" />
+    <activity
+        android:name=".Today"
+        android:exported="true" />
+        <activity
+            android:name=".Inventory"
+            android:exported="true" />
+        <activity
+            android:name=".ScanE"
+            android:exported="true" />
+        <activity
+            android:name=".Generate"
+            android:exported="true" />
+        <activity
+            android:name=".Settings"
+            android:exported="true" />
+        <activity
+            android:name=".Sales"
+            android:exported="true" />
+        <activity
+            android:name=".Orders"
+            android:exported="true" />
+        <activity
+            android:name=".Scan"
+            android:exported="true" />
+        <activity
+            android:name=".DashboardE"
+            android:exported="true" />
+        <activity
+            android:name=".SettingE"
+            android:exported="true" />
+        <activity
+            android:name=".Dashboard"
+            android:exported="true" />
+        <activity
+            android:name=".Login"
+            android:exported="true" />
+        <activity
+            android:name=".Startup"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fffafa"
+    tools:context=".CusOrder">
+
+    <!-- Logo and App Name -->
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="148dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="18dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/logo2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Page Title -->
+    <TextView
+        android:id="@+id/pageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:text="Quick Order"
+        android:textColor="#1b5692"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/logo"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- ScrollView for Order Form -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:padding="24dp"
+        app:layout_constraintTop_toBottomOf="@id/pageTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavc">
+
+        <!-- Order Form Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#ffff"
+            android:padding="24dp">
+
+            <!-- Name Input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name"
+                android:textColor="#1b5692"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="16dp"/>
+
+            <EditText
+                android:id="@+id/nameInput"
+                android:layout_width="165dp"
+                android:layout_height="wrap_content"
+                android:hint="Enter Name"
+                android:layout_marginLeft="25dp"
+                android:textColorHint="#801B5692"
+                android:textColor="#1b5692"
+                android:backgroundTint="#1b5692"
+                android:textSize="10sp"
+                android:layout_marginTop="5dp"/>
+
+            <!-- Delivery Address -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Address"
+                android:textColor="#1b5692"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:id="@+id/addressInput"
+                android:layout_width="165dp"
+                android:layout_height="wrap_content"
+                android:hint="Enter Address"
+                android:layout_marginLeft="25dp"
+                android:textColorHint="#801B5692"
+                android:textColor="#1b5692"
+                android:backgroundTint="#1b5692"
+                android:textSize="10sp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Quantity -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/quantity_label"
+                android:textColor="#1b5692"
+                android:textStyle="bold"
+                android:textSize="10sp"
+                android:layout_marginLeft="25dp"/>
+
+            <EditText
+                android:id="@+id/quantityInput"
+                android:layout_width="165dp"
+                android:layout_height="wrap_content"
+                android:hint="Enter Quantity"
+                android:textColorHint="#801B5692"
+                android:textColor="#1b5692"
+                android:backgroundTint="#1b5692"
+                android:inputType="number"
+                android:minHeight="48dp"
+                android:textSize="10sp"
+                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="25dp"/>
+
+            <!-- Water Type Selection -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:text="Water Type:"
+                android:textColor="#1b5692"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <RadioGroup
+                android:id="@+id/waterTypeRadioGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:layout_marginBottom="9dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/radioMineral"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="M"
+                    android:textColor="#1b5692"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="20dp"
+                    android:checked="true"
+                    android:buttonTint="#1b5692"/>
+
+                <RadioButton
+                    android:id="@+id/radioAlkaline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="A"
+                    android:textColor="#1b5692"
+                    android:textSize="12sp"
+                    android:buttonTint="#1b5692"/>
+            </RadioGroup>
+
+            <!-- Advance Order Toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="25dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Advance Order"
+                    android:textColor="#1b5692"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="12dp"/>
+
+                <Switch
+                    android:id="@+id/advanceOrderToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"/>
+            </LinearLayout>
+
+            <!-- Pick-up and Delivery Titles (Side by Side) -->
+            <LinearLayout
+                android:id="@+id/schedulingTitlesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="11dp"
+                android:layout_gravity="center">
+
+                <!-- Pick-up Title -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Pick-up:"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+
+                <!-- Delivery Title -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Delivery:"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <!-- Pick-up and Delivery Calendars (Side by Side) -->
+            <LinearLayout
+                android:id="@+id/schedulingCalendarsContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp"
+                android:layout_gravity="center">
+
+                <!-- Pick-up Date -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+
+
+                    <Button
+                        android:id="@+id/pickupDateButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:text="Select"
+                        android:textColor="#ffffff"
+                        android:backgroundTint="#1b5692"
+                        android:textSize="9sp"/>
+                </LinearLayout>
+
+                <!-- Delivery Date -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+
+                    <Button
+                        android:id="@+id/deliveryDateButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:text="Select"
+                        android:textColor="#ffffff"
+                        android:backgroundTint="#1b5692"
+                        android:textSize="9sp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Buttons -->
+            <LinearLayout
+                android:layout_width="190dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_gravity="center">
+
+                <Button
+                    android:id="@+id/cancelButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Cancel"
+                    android:textColor="#ffffff"
+                    android:backgroundTint="#808080"
+                    android:textSize="9sp"/>
+
+                <Button
+                    android:id="@+id/submitButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Submit"
+                    android:textColor="#ffffff"
+                    android:backgroundTint="#1b5692"
+                    android:textSize="9sp"/>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1b5692"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:itemIconTint="#fffafa"
+        app:itemTextColor="#fffafa"
+        app:itemIconSize="24dp"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_navmenuc" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

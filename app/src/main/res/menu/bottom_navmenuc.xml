@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Home"
+        android:icon="@drawable/bthome"
+        android:id="@+id/bthomec"/>
+    <item android:title="Cart"
+        android:icon="@drawable/navcart"
+        android:id="@+id/btcart"/>
+    <item android:title="Purchases"
+        android:icon="@drawable/navhis"
+        android:id="@+id/bthis"/>
+    <item android:title="Profile"
+        android:icon="@drawable/navprof"
+        android:id="@+id/btsettingc"/>
+</menu>
