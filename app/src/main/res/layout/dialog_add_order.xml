@@ -63,30 +63,6 @@
         android:textSize="10sp"
         android:layout_marginBottom="5dp"/>
 
-    <!-- Quantity Input -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Quantity*"
-        android:textColor="#1b5692"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:layout_marginLeft="25dp"
-        android:layout_marginBottom="8dp"/>
-
-    <EditText
-        android:id="@+id/quantityInput"
-        android:layout_width="180dp"
-        android:layout_height="wrap_content"
-        android:hint="Enter Quantity"
-        android:inputType="number"
-        android:textColorHint="#801B5692"
-        android:textColor="#1b5692"
-        android:backgroundTint="#1b5692"
-        android:textSize="10sp"
-        android:layout_marginLeft="25dp"
-        android:layout_marginBottom="5dp"/>
-
     <!-- UOM Spinner -->
     <TextView
         android:layout_width="wrap_content"
@@ -110,28 +86,129 @@
         android:popupElevation="8dp"
         android:overlapAnchor="false"/>
 
-    <!-- Water Type Spinner -->
+    <!-- Quantity Selection -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quantity*"
+        android:textColor="#1b5692"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="25dp"
+        android:layout_marginBottom="8dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="25dp"
+        android:layout_marginBottom="5dp"
+        android:gravity="center">
+        
+        <Button
+            android:id="@+id/minusButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="-"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#1b5692"
+            android:layout_marginEnd="8dp"/>
+        
+        <TextView
+            android:id="@+id/quantityDisplay"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:text="1"
+            android:textSize="14sp"
+            android:textColor="#1b5692"
+            android:gravity="center"
+            android:background="#F0F0F0"
+            android:layout_marginEnd="8dp"/>
+        
+        <Button
+            android:id="@+id/plusButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="+"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#1b5692"/>
+    </LinearLayout>
+
+    <!-- Water Type Radio Buttons -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Water Type*"
         android:textColor="#1b5692"
         android:textSize="10sp"
+        android:textStyle="bold"
         android:layout_marginLeft="26dp"
-        android:layout_marginBottom="4dp"
-        android:textStyle="bold" />
+        android:layout_marginBottom="4dp"/>
 
-    <Spinner
-        android:id="@+id/waterTypeSpinner"
-        android:layout_width="180dp"
-        android:layout_height="40dp"
-        android:layout_marginLeft="26dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/custom_dropdown"
-        android:spinnerMode="dropdown"
-        android:popupBackground="#ffffff"
-        android:popupElevation="8dp"
-        android:overlapAnchor="false" />
+    <RadioGroup
+        android:id="@+id/waterTypeGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="31dp"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <RadioButton
+            android:id="@+id/mineralRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mineral"
+            android:textSize="10sp"
+            android:layout_marginEnd="16dp"
+            android:textColor="#1b5692"
+            android:buttonTint="#1b5692"/>
+
+        <RadioButton
+            android:id="@+id/alkalineRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alkaline"
+            android:textSize="10sp"
+            android:textColor="#F44336"
+            android:buttonTint="#F44336"/>
+    </RadioGroup>
+
+    <!-- Additional Items Container -->
+    <LinearLayout
+        android:id="@+id/itemsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Add Item Button -->
+    <Button
+        android:id="@+id/addItemButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+ Add Another Item"
+        android:textColor="#1b5692"
+        android:textSize="10sp"
+        android:backgroundTint="#E3F2FD"
+        android:layout_marginLeft="25dp"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Total Price Display -->
+    <TextView
+        android:id="@+id/totalPriceDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total: ₱0.00"
+        android:textColor="#1b5692"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="25dp"
+        android:layout_marginBottom="8dp"/>
+
 
     <!-- Payment Status -->
     <TextView
@@ -158,9 +235,9 @@
             android:layout_height="wrap_content"
             android:text="@string/paid"
             android:textSize="10sp"
-            android:layout_marginEnd="16dp"
-            android:textColor="#1b5692"
-            android:buttonTint="#1b5692"/>
+            android:buttonTint="#4CAF50"
+            android:textColor="#4CAF50"
+            android:layout_marginEnd="16dp" />
 
         <RadioButton
             android:id="@+id/unpaidRadio"
@@ -168,8 +245,8 @@
             android:layout_height="wrap_content"
             android:textSize="10sp"
             android:text="@string/unpaid"
-            android:textColor="#1b5692"
-            android:buttonTint="#1b5692"/>
+            android:buttonTint="#FF9800"
+            android:textColor="#FF9800"/>
     </RadioGroup>
 
     <!-- Buttons -->

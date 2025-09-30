@@ -10,24 +10,33 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RadioGroup
-import android.widget.Spinner
+import android.widget.AutoCompleteTextView
+import com.google.android.material.textfield.TextInputLayout
 import android.widget.Toast
 import android.widget.TextView
+import android.app.Dialog
+import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.adamson.fhydroscan.database.OrderDatabaseHelper
+import com.adamson.fhydroscan.utils.PricingUtils
 
 class Generate : AppCompatActivity() {
     private lateinit var nameInput: EditText
     private lateinit var addressInput: EditText
-    private lateinit var unitSpinner: Spinner
+    private lateinit var unitSpinner: AutoCompleteTextView
     private lateinit var waterTypeGroup: RadioGroup
     private lateinit var generateButton: Button
     private var lastGeneratedBitmap: Bitmap? = null
+    private lateinit var orderDatabaseHelper: OrderDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_generate)
+
+        // Initialize database helper
+        orderDatabaseHelper = OrderDatabaseHelper(this)
 
         // Initialize views
         nameInput = findViewById(R.id.nameLayout)
@@ -42,11 +51,11 @@ class Generate : AppCompatActivity() {
             finish()
         }
 
-        // Set up unit spinner
-        val units = arrayOf("20L", "10L", "7L", "6L")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, units)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        unitSpinner.adapter = adapter
+        // Set up unit dropdown
+        val units = arrayOf("20L Slim", "10L Slim", "20L Round")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, units)
+        unitSpinner.setAdapter(adapter)
+        unitSpinner.setText(units[0], false) // Set default selection
 
         // Set up generate button
         generateButton.setOnClickListener {
@@ -77,7 +86,7 @@ class Generate : AppCompatActivity() {
     private fun generateQRCode() {
         val name = nameInput.text.toString()
         val address = addressInput.text.toString()
-        val unit = unitSpinner.selectedItem.toString()
+        val unit = unitSpinner.text.toString()
         val waterType = when (waterTypeGroup.checkedRadioButtonId) {
             R.id.mineralRadio -> "M"
             R.id.alkalineRadio -> "A"
@@ -155,17 +164,121 @@ class Generate : AppCompatActivity() {
     }
 
     private fun showAddOrderConfirmation() {
-        AlertDialog.Builder(this)
-            .setTitle("Add new QR as an order today?")
-            .setMessage("Would you like to add this QR code as a new order?")
-            .setPositiveButton("Yes") { _, _ ->
-                // TODO: Add logic to add as order
-                Toast.makeText(this, "Added as new order", Toast.LENGTH_SHORT).show()
+        // Get the current form data
+        val name = nameInput.text.toString()
+        val address = addressInput.text.toString()
+        val unit = unitSpinner.text.toString()
+        val waterType = when (waterTypeGroup.checkedRadioButtonId) {
+            R.id.mineralRadio -> "Mineral"
+            R.id.alkalineRadio -> "Alkaline"
+            else -> "Mineral"
+        }
+        
+        // Show quantity dialog
+        showQuantityDialog(name, address, unit, waterType)
+    }
+    
+    private fun showQuantityDialog(name: String, address: String, unit: String, waterType: String) {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.dialog_qr_order_quantity)
+        
+        // Initialize views
+        val customerNameDisplay = dialog.findViewById<TextView>(R.id.customerNameDisplay)
+        val customerAddressDisplay = dialog.findViewById<TextView>(R.id.customerAddressDisplay)
+        val productUomDisplay = dialog.findViewById<TextView>(R.id.productUomDisplay)
+        val productWaterTypeDisplay = dialog.findViewById<TextView>(R.id.productWaterTypeDisplay)
+        val minusButton = dialog.findViewById<Button>(R.id.minusButton)
+        val plusButton = dialog.findViewById<Button>(R.id.plusButton)
+        val quantityDisplay = dialog.findViewById<TextView>(R.id.quantityDisplay)
+        val paymentStatusGroup = dialog.findViewById<RadioGroup>(R.id.paymentStatusGroup)
+        val paidRadio = dialog.findViewById<RadioButton>(R.id.paidRadio)
+        val unpaidRadio = dialog.findViewById<RadioButton>(R.id.unpaidRadio)
+        val addButton = dialog.findViewById<Button>(R.id.addButton)
+        val cancelButton = dialog.findViewById<Button>(R.id.cancelButton)
+        
+        // Set customer and product info
+        customerNameDisplay.text = "Name: $name"
+        customerAddressDisplay.text = "Address: $address"
+        productUomDisplay.text = "UOM: $unit"
+        productWaterTypeDisplay.text = "Water Type: $waterType"
+        
+        // Set default payment status
+        paidRadio.isChecked = true
+        
+        // Quantity counter
+        var quantity = 1
+        quantityDisplay.text = quantity.toString()
+        
+        minusButton.setOnClickListener {
+            if (quantity > 1) {
+                quantity--
+                quantityDisplay.text = quantity.toString()
             }
-            .setNegativeButton("No") { _, _ ->
-                // Do nothing or handle as needed
+        }
+        
+        plusButton.setOnClickListener {
+            quantity++
+            quantityDisplay.text = quantity.toString()
+        }
+        
+        // Add button
+        addButton.setOnClickListener {
+            val isPaid = paidRadio.isChecked
+            addOrderToDatabase(name, address, unit, waterType, quantity, isPaid)
+            dialog.dismiss()
+        }
+        
+        // Cancel button
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialog.show()
+    }
+    
+    private fun addOrderToDatabase(name: String, address: String, unit: String, waterType: String, quantity: Int, isPaid: Boolean) {
+        try {
+            // Create product string in the format expected by the database
+            val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
+            val product = "$unit $waterTypeCode x$quantity"
+            
+            // Calculate price (using the same logic as Today.kt)
+            val price = calculatePrice(waterTypeCode, unit, quantity)
+            
+            // Create CustomerOrder object
+            val customerOrder = CustomerOrder(
+                name = name,
+                address = address,
+                product = product,
+                total = price,
+                isPaid = isPaid,
+                status = "Pending"
+            )
+            
+            // Add to database using the same method as Today page
+            val success = orderDatabaseHelper.addCustomerOrder(customerOrder)
+            
+            if (success) {
+                Toast.makeText(this, "Order added to Today's orders successfully", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Failed to add order to database", Toast.LENGTH_SHORT).show()
             }
-            .setCancelable(false)
-            .show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error adding order: ${e.message}", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+    
+    private fun calculatePrice(waterTypeCode: String, uom: String, quantity: Int): Double {
+        // Get price from central pricing database
+        val waterType = if (waterTypeCode == "A") "Alkaline" else "Mineral"
+        val size = when (uom) {
+            "20L Slim", "20L Round" -> "20L"
+            "10L Slim" -> "10L"
+            else -> "20L"
+        }
+        
+        val basePrice = PricingUtils.getWaterPrice(this, waterType, size)
+        return basePrice * quantity
     }
 }

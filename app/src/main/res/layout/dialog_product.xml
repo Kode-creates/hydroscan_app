@@ -19,6 +19,116 @@
         android:layout_marginBottom="16dp"
         android:layout_gravity="center"/>
 
+    <!-- Water Type Selection (for gallon products) -->
+    <LinearLayout
+        android:id="@+id/waterTypeContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Water Type:"
+            android:textColor="#1b5692"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioGroup
+            android:id="@+id/waterTypeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/radioMineral"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mineral"
+                android:buttonTint="#1b5692"
+                android:textSize="8sp"
+                android:textColor="#1b5692"
+                android:layout_marginEnd="8dp"
+                android:checked="true"
+                android:scaleX="0.9"
+                android:scaleY="0.9"/>
+
+            <RadioButton
+                android:id="@+id/radioAlkaline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alkaline"
+                android:buttonTint="#1b5692"
+                android:textSize="8sp"
+                android:textColor="#1b5692"
+                android:layout_marginEnd="8dp"
+                android:scaleX="0.9"
+                android:scaleY="0.9"/>
+
+            <RadioButton
+                android:id="@+id/radioNoRefill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Refill"
+                android:buttonTint="#1b5692"
+                android:textSize="8sp"
+                android:textColor="#1b5692"
+                android:scaleX="0.9"
+                android:scaleY="0.9"/>
+        </RadioGroup>
+    </LinearLayout>
+
+    <!-- Gallon Type Selection (for gallon products) -->
+    <LinearLayout
+        android:id="@+id/gallonTypeContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gallon Type:"
+            android:textColor="#1b5692"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioGroup
+            android:id="@+id/gallonTypeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/radioSlim"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Slim"
+                android:buttonTint="#1b5692"
+                android:textSize="12sp"
+                android:textColor="#1b5692"
+                android:layout_marginEnd="16dp"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/radioRound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Round"
+                android:buttonTint="#1b5692"
+                android:textSize="12sp"
+                android:textColor="#1b5692"/>
+        </RadioGroup>
+    </LinearLayout>
+
     <!-- Quantity Section -->
     <TextView
         android:layout_width="wrap_content"

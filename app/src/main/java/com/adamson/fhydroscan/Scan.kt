@@ -4,10 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +12,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.adamson.fhydroscan.databinding.ActivityScanBinding
+import com.adamson.fhydroscan.database.OrderDatabaseHelper
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -29,6 +27,7 @@ class Scan : AppCompatActivity() {
     private var imageAnalyzer: ImageAnalysis? = null
     private lateinit var barcodeScanner: BarcodeScanner
     private var hasHandledScan: Boolean = false
+    private lateinit var orderDatabaseHelper: OrderDatabaseHelper
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -45,6 +44,9 @@ class Scan : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityScanBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Initialize database helper
+        orderDatabaseHelper = OrderDatabaseHelper(this)
 
         val btgenqr = findViewById<android.widget.ImageView>(R.id.btgenqr)
         btgenqr.setOnClickListener {
@@ -148,24 +150,46 @@ class Scan : AppCompatActivity() {
 
     private fun handleScannedPayload(payload: String) {
         val data = parsePayload(payload)
+        val name = data["name"] ?: "-"
+        val address = data["address"] ?: "-"
+        val uom = data["unit"] ?: "-"
 
-        // Inflate your custom dialog layout
         val dialogView = layoutInflater.inflate(R.layout.dialog_scanned_admin, null)
 
-        val nameText = dialogView.findViewById<TextView>(R.id.nameText)
-        val addressText = dialogView.findViewById<TextView>(R.id.addressText)
-        val quantityText = dialogView.findViewById<TextView>(R.id.quantityText)
+        val nameValue = dialogView.findViewById<TextView>(R.id.nameValue)
+        val addressValue = dialogView.findViewById<TextView>(R.id.addressValue)
+        val uomValue = dialogView.findViewById<TextView>(R.id.uomValue)
+        val quantityDisplay = dialogView.findViewById<TextView>(R.id.quantityDisplay)
+        val minusButton = dialogView.findViewById<Button>(R.id.minusButton)
+        val plusButton = dialogView.findViewById<Button>(R.id.plusButton)
         val radioMineral = dialogView.findViewById<RadioButton>(R.id.radioMineral)
         val radioAlkaline = dialogView.findViewById<RadioButton>(R.id.radioAlkaline)
+        val radioPaid = dialogView.findViewById<RadioButton>(R.id.radioPaid)
+        val radioUnpaid = dialogView.findViewById<RadioButton>(R.id.radioUnpaid)
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
         val submitButton = dialogView.findViewById<Button>(R.id.submitButton)
 
-        // Fill in scanned data
-        nameText.text = "Name: ${data["name"] ?: "-"}"
-        addressText.text = "Address: ${data["address"] ?: "-"}"
-        quantityText.text = "Quantity: ${data["unit"] ?: "-"}"
+        nameValue.text = name
+        addressValue.text = address
+        uomValue.text = uom
+        radioMineral.isChecked = true
+        radioPaid.isChecked = true // Default to paid
 
-        radioMineral.isChecked = true // default
+        // Quantity counter
+        var quantity = 1
+        quantityDisplay.text = quantity.toString()
+
+        minusButton.setOnClickListener {
+            if (quantity > 1) {
+                quantity--
+                quantityDisplay.text = quantity.toString()
+            }
+        }
+
+        plusButton.setOnClickListener {
+            quantity++
+            quantityDisplay.text = quantity.toString()
+        }
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -178,21 +202,32 @@ class Scan : AppCompatActivity() {
         }
 
         submitButton.setOnClickListener {
-            val waterType = when {
-                radioMineral.isChecked -> "Mineral"
-                radioAlkaline.isChecked -> "Alkaline"
-                else -> "Not selected"
+            val waterType = if (radioMineral.isChecked) "Mineral" else "Alkaline"
+            val isPaid = radioPaid.isChecked
+            
+            // Save to database
+            val success = orderDatabaseHelper.addOrderItem(
+                customerName = name,
+                customerAddress = address,
+                waterType = waterType,
+                uom = uom,
+                quantity = quantity,
+                isPaid = isPaid
+            )
+            
+            if (success) {
+                // Update inventory for gallons
+                val itemKey = orderDatabaseHelper.getItemKeyForInventory(waterType, uom)
+                if (itemKey != null) {
+                    orderDatabaseHelper.processPurchaseAndUpdateInventory(itemKey, quantity, this)
+                }
+                
+                Toast.makeText(this, "Order added successfully", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+                hasHandledScan = false
+            } else {
+                Toast.makeText(this, "Failed to add order", Toast.LENGTH_SHORT).show()
             }
-
-            // TODO: Save or send data
-            println("Order Added:")
-            println("Name: ${data["name"]}")
-            println("Address: ${data["address"]}")
-            println("Quantity: ${data["unit"]}")
-            println("Type: $waterType")
-
-            dialog.dismiss()
-            hasHandledScan = false
         }
 
         dialog.show()

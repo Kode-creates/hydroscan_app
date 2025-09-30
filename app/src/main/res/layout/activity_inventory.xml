@@ -53,32 +53,15 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/gallon_section"
-                        android:textColor="#1b5692"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:background="#f3f2f2"/>
-
-                    <ImageButton
-                        android:id="@+id/addGallon"
-                        android:layout_width="43dp"
-                        android:layout_height="43dp"
-                        android:src="@drawable/ic_add"
-                        android:contentDescription="@string/add_gallon_button"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:padding="8dp"
-                        app:tint="#1b5692"/>
-                </LinearLayout>
+                    android:text="@string/gallon_section"
+                    android:textColor="#1b5692"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="#f3f2f2"
+                    android:padding="8dp"/>
 
                 <!-- Inv Icons -->
 
@@ -97,10 +80,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/slimGallonImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invslim"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtySlimGallon"
@@ -127,10 +115,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/roundGallonImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invround"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtyRoundGallon"
@@ -158,32 +151,15 @@
                 android:orientation="vertical"
                 android:layout_marginTop="24dp">
 
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/seal_section"
-                        android:textColor="#1b5692"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:background="#f3f2f2"/>
-
-                    <ImageButton
-                        android:id="@+id/addSeal"
-                        android:layout_width="43dp"
-                        android:layout_height="43dp"
-                        android:src="@drawable/ic_add"
-                        android:contentDescription="@string/add_seal_button"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:padding="8dp"
-                        app:tint="#1b5692"/>
-                </LinearLayout>
+                    android:text="@string/seal_section"
+                    android:textColor="#1b5692"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="#f3f2f2"
+                    android:padding="8dp"/>
 
                 <!-- Seal Section Box -->
                 <LinearLayout
@@ -200,10 +176,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/smallCapSealImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/imvsmall"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtySmallCapSeal"
@@ -230,10 +211,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/bigCapSealImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invbig"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtyBigCapSeal"
@@ -260,10 +246,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/faucetSealImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invfaucet"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtyFaucetSeal"
@@ -290,10 +281,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/umbrellaSealImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invumbre"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtyUmbrellaSeal"
@@ -321,32 +317,15 @@
                 android:orientation="vertical"
                 android:layout_marginTop="24dp">
 
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/cap_cover_section"
-                        android:textColor="#1b5692"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:background="#f3f2f2"/>
-
-                    <ImageButton
-                        android:id="@+id/addCapCover"
-                        android:layout_width="43dp"
-                        android:layout_height="43dp"
-                        android:src="@drawable/ic_add"
-                        android:contentDescription="@string/add_cap_cover_button"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:padding="8dp"
-                        app:tint="#1b5692"/>
-                </LinearLayout>
+                    android:text="@string/cap_cover_section"
+                    android:textColor="#1b5692"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="#f3f2f2"
+                    android:padding="8dp"/>
 
                 <!-- Cap Cover Section Box -->
                 <LinearLayout
@@ -363,10 +342,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/smallCapCoverImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invscover"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtySmallCapCover"
@@ -393,10 +377,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/bigCapCoverImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invbcover"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtyBigCapCover"
@@ -423,10 +412,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/fullRoundCoverImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invsfull"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtyFullRoundCover"
@@ -453,10 +447,15 @@
                         android:gravity="center">
 
                         <ImageView
+                            android:id="@+id/nonLeakCoverImage"
                             android:layout_width="65dp"
                             android:layout_height="65dp"
                             android:src="@drawable/invleak"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"/>
 
                         <TextView
                             android:id="@+id/qtyNonLeakCover"

@@ -1,5 +1,6 @@
 package com.adamson.fhydroscan
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -11,12 +12,19 @@ import java.util.*
 import kotlin.math.roundToInt
 
 class Sales : AppCompatActivity() {
-    private lateinit var reportTableContent: LinearLayout
-    private lateinit var reportPeriod: TextView
-    private lateinit var totalQuantity: TextView
+    private lateinit var reportTypeSpinner: AutoCompleteTextView
+    private lateinit var dateRangeText: TextView
+    private lateinit var calendarButton: Button
+    private lateinit var lineGraphPlaceholder: View
+    private lateinit var salesSpikeQty: TextView
+    private lateinit var salesSpikeUom: TextView
+    private lateinit var salesSpikeRevenue: TextView
+    private lateinit var topCustomerName: TextView
     private lateinit var totalRevenue: TextView
-    private lateinit var calendarView: CalendarView
-    private lateinit var reportTypeSpinner: Spinner
+    private lateinit var unpaidInfo: TextView
+    private lateinit var totalQuantity: TextView
+    private lateinit var totalUom: TextView
+    private lateinit var mostOrderedWater: TextView
 
     // Dummy data structure
     data class SalesData(
@@ -24,66 +32,72 @@ class Sales : AppCompatActivity() {
         val uom: String,
         val quantity: Int,
         val revenue: Double,
-        val waterType: String  // "Alkaline" or "Mineral"
+        val waterType: String,  // "Alkaline" or "Mineral"
+        val customerName: String
     )
 
     // Generate dummy data for demonstration
     private val dummyData = generateDummyData()
+    private var selectedDate = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sales)
 
         // Initialize views
-        reportTableContent = findViewById(R.id.reportTableContent)
-        reportPeriod = findViewById(R.id.reportPeriod)
-        totalQuantity = findViewById(R.id.totalQuantity)
-        totalRevenue = findViewById(R.id.totalRevenue)
-        calendarView = findViewById(R.id.calendarView)
-        reportTypeSpinner = findViewById(R.id.reportTypeSpinner)
-
+        initializeViews()
+        
         // Set up listeners
         setupReportTypeSpinner()
-        setupCalendarListener()
+        setupCalendarButton()
         setupBottomNavigation()
 
         // Show initial report
         generateReport(Calendar.getInstance())
     }
 
+    private fun initializeViews() {
+        reportTypeSpinner = findViewById(R.id.reportTypeSpinner)
+        dateRangeText = findViewById(R.id.dateRangeText)
+        calendarButton = findViewById(R.id.calendarButton)
+        lineGraphPlaceholder = findViewById(R.id.lineGraphPlaceholder)
+        salesSpikeQty = findViewById(R.id.salesSpikeQty)
+        salesSpikeUom = findViewById(R.id.salesSpikeUom)
+        salesSpikeRevenue = findViewById(R.id.salesSpikeRevenue)
+        topCustomerName = findViewById(R.id.topCustomerName)
+        totalRevenue = findViewById(R.id.totalRevenue)
+        unpaidInfo = findViewById(R.id.unpaidInfo)
+        totalQuantity = findViewById(R.id.totalQuantity)
+        totalUom = findViewById(R.id.totalUom)
+        mostOrderedWater = findViewById(R.id.mostOrderedWater)
+    }
+
     private fun setupReportTypeSpinner() {
         val reportTypes = arrayOf("Daily", "Weekly", "Monthly", "Yearly")
-        val adapter = ArrayAdapter(this, R.layout.custom_spinner_item, reportTypes)
-        adapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item)
-        reportTypeSpinner.adapter = adapter
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, reportTypes)
+        reportTypeSpinner.setAdapter(adapter)
+        reportTypeSpinner.setText("Weekly", false) // Set default selection
         
-        // Set default selection to "Daily" (index 0)
-        reportTypeSpinner.setSelection(0)
-        
-        // Force the spinner to show the selected item text
-        reportTypeSpinner.post {
-            reportTypeSpinner.setSelection(0)
-        }
-        
-        reportTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                generateReport(Calendar.getInstance().apply { 
-                    timeInMillis = calendarView.date 
-                })
-            }
-            
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing
-            }
+        reportTypeSpinner.setOnItemClickListener { _, _, position, _ ->
+            generateReport(selectedDate)
         }
     }
 
-    private fun setupCalendarListener() {
-        calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
-            val selectedDate = Calendar.getInstance().apply {
-                set(year, month, dayOfMonth)
-            }
-            generateReport(selectedDate)
+    private fun setupCalendarButton() {
+        calendarButton.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    selectedDate = Calendar.getInstance().apply {
+                        set(year, month, dayOfMonth)
+                    }
+                    generateReport(selectedDate)
+                },
+                selectedDate.get(Calendar.YEAR),
+                selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH)
+            )
+            datePickerDialog.show()
         }
     }
 
@@ -113,6 +127,7 @@ class Sales : AppCompatActivity() {
         val calendar = Calendar.getInstance()
         val random = Random()
         val waterTypes = listOf("Alkaline", "Mineral")
+        val customerNames = listOf("Michelle Obama", "John Smith", "Sarah Johnson", "Mike Wilson", "Lisa Brown")
 
         // Generate data for the last 365 days
         repeat(365) {
@@ -124,7 +139,8 @@ class Sales : AppCompatActivity() {
                         uom = listOf("20L", "10L", "7L", "6L")[random.nextInt(4)],
                         quantity = random.nextInt(10) + 1,
                         revenue = (random.nextInt(1000) + 500).toDouble(),
-                        waterType = waterTypes[random.nextInt(2)]
+                        waterType = waterTypes[random.nextInt(2)],
+                        customerName = customerNames[random.nextInt(customerNames.size)]
                     )
                 )
             }
@@ -134,41 +150,27 @@ class Sales : AppCompatActivity() {
     }
 
     private fun generateReport(selectedDate: Calendar) {
-        val reportType = when (reportTypeSpinner.selectedItemPosition) {
-            0 -> ReportType.DAILY
-            1 -> ReportType.WEEKLY
-            2 -> ReportType.MONTHLY
-            3 -> ReportType.YEARLY
-            else -> ReportType.DAILY
+        val reportType = when (reportTypeSpinner.text.toString()) {
+            "Daily" -> ReportType.DAILY
+            "Weekly" -> ReportType.WEEKLY
+            "Monthly" -> ReportType.MONTHLY
+            "Yearly" -> ReportType.YEARLY
+            else -> ReportType.WEEKLY
         }
 
         val filteredData = filterDataByDateRange(selectedDate, reportType)
-        val groupedData = groupDataByUOM(filteredData)
-        val mostOrderedTypeOverall = getMostOrderedType(filteredData)
         
-        // Update period text
-        reportPeriod.text = "Report for: ${getReportPeriodText(selectedDate, reportType)}"
-
-        // Clear previous data
-        reportTableContent.removeAllViews()
-
-        // Add rows for each UOM
-        var totalQty = 0
-        var totalRev = 0.0
-
-        groupedData.forEach { (uom, data) ->
-            val quantity = data.sumOf { it.quantity }
-            val revenue = data.sumOf { it.revenue }
-            val mostOrderedTypeForUOM = getMostOrderedType(data)
-            totalQty += quantity
-            totalRev += revenue
-
-            addReportRow(uom, quantity, revenue, mostOrderedTypeForUOM)
-        }
-
-        // Update totals
-        totalQuantity.text = totalQty.toString()
-        totalRevenue.text = String.format("₱%.2f", totalRev)
+        // Update date range display
+        updateDateRangeDisplay(selectedDate, reportType)
+        
+        // Calculate and display statistics
+        updateStatistics(filteredData)
+        
+        // Calculate and display sales spike data
+        updateSalesSpikeData(filteredData)
+        
+        // Calculate and display top customer
+        updateTopCustomer(filteredData)
     }
 
     private fun filterDataByDateRange(selectedDate: Calendar, reportType: ReportType): List<SalesData> {
@@ -209,46 +211,9 @@ class Sales : AppCompatActivity() {
         }
     }
 
-    private fun groupDataByUOM(data: List<SalesData>): Map<String, List<SalesData>> {
-        return data.groupBy { it.uom }
-    }
-
-    private fun getMostOrderedType(data: List<SalesData>): String {
-        return data.groupBy { it.waterType }
-            .mapValues { it.value.sumOf { sale -> sale.quantity } }
-            .maxByOrNull { it.value }?.key ?: "N/A"
-    }
-
-    private fun addReportRow(uom: String, quantity: Int, revenue: Double, mostOrderedType: String) {
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            setPadding(8, 8, 8, 8)
-        }
-
-        // Add columns
-        listOf(
-            uom,
-            quantity.toString(),
-            String.format("₱%.2f", revenue),
-            mostOrderedType
-        ).forEach { text ->
-            TextView(this).apply {
-                this.text = text
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                setTextColor(resources.getColor(R.color.black, null))
-            }.also { row.addView(it) }
-        }
-
-        reportTableContent.addView(row)
-    }
-
-    private fun getReportPeriodText(date: Calendar, reportType: ReportType): String {
+    private fun updateDateRangeDisplay(date: Calendar, reportType: ReportType) {
         val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        return when (reportType) {
+        val dateRange = when (reportType) {
             ReportType.DAILY -> dateFormat.format(date.time)
             ReportType.WEEKLY -> {
                 val start = date.clone() as Calendar
@@ -257,9 +222,122 @@ class Sales : AppCompatActivity() {
                 end.add(Calendar.DAY_OF_YEAR, 6)
                 "${dateFormat.format(start.time)} - ${dateFormat.format(end.time)}"
             }
-            ReportType.MONTHLY -> SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(date.time)
-            ReportType.YEARLY -> SimpleDateFormat("yyyy", Locale.getDefault()).format(date.time)
+            ReportType.MONTHLY -> {
+                val start = date.clone() as Calendar
+                start.set(Calendar.DAY_OF_MONTH, 1)
+                val end = start.clone() as Calendar
+                end.add(Calendar.MONTH, 1)
+                end.add(Calendar.DAY_OF_YEAR, -1)
+                "${dateFormat.format(start.time)} - ${dateFormat.format(end.time)}"
+            }
+            ReportType.YEARLY -> {
+                val start = date.clone() as Calendar
+                start.set(Calendar.DAY_OF_YEAR, 1)
+                val end = start.clone() as Calendar
+                end.add(Calendar.YEAR, 1)
+                end.add(Calendar.DAY_OF_YEAR, -1)
+                "${dateFormat.format(start.time)} - ${dateFormat.format(end.time)}"
+            }
         }
+        dateRangeText.text = dateRange
+    }
+
+    private fun updateStatistics(data: List<SalesData>) {
+        val totalRev = data.sumOf { it.revenue }
+        val totalQty = data.sumOf { it.quantity }
+        val totalUomValue = data.sumOf { it.uom.replace("L", "").toIntOrNull() ?: 0 }
+        val mostOrdered = data.groupBy { it.waterType }
+            .mapValues { it.value.sumOf { sale -> sale.quantity } }
+            .maxByOrNull { it.value }?.key ?: "N/A"
+        
+        // Calculate unpaid (simplified - assume 10% of orders are unpaid)
+        val unpaidCount = (data.size * 0.1).toInt()
+        val unpaidCustomers = data.take(unpaidCount).map { it.customerName }.distinct()
+        
+        totalRevenue.text = String.format("₱%.2f", totalRev)
+        totalQuantity.text = totalQty.toString()
+        totalUom.text = "${totalUomValue}L"
+        mostOrderedWater.text = mostOrdered
+        
+        if (unpaidCount > 0) {
+            unpaidInfo.text = "$unpaidCount qty, ${unpaidCustomers.joinToString(", ")}"
+        } else {
+            unpaidInfo.text = "0 qty, No customers"
+        }
+    }
+
+    private fun updateSalesSpikeData(data: List<SalesData>) {
+        if (data.isEmpty()) {
+            salesSpikeQty.text = "0 Gallons (N/A)"
+            salesSpikeUom.text = "0L (N/A)"
+            salesSpikeRevenue.text = "₱0.00 (N/A)"
+            return
+        }
+
+        // Find highest quantity day
+        val qtyByDay = data.groupBy { 
+            val cal = it.date.clone() as Calendar
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            cal
+        }.mapValues { it.value.sumOf { sale -> sale.quantity } }
+        
+        val maxQtyDay = qtyByDay.maxByOrNull { it.value }
+        val qtyDayName = if (maxQtyDay != null) {
+            val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+            dayFormat.format(maxQtyDay.key.time)
+        } else "N/A"
+        
+        // Find highest UOM day
+        val uomByDay = data.groupBy { 
+            val cal = it.date.clone() as Calendar
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            cal
+        }.mapValues { it.value.sumOf { sale -> sale.uom.replace("L", "").toIntOrNull() ?: 0 } }
+        
+        val maxUomDay = uomByDay.maxByOrNull { it.value }
+        val uomDayName = if (maxUomDay != null) {
+            val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+            dayFormat.format(maxUomDay.key.time)
+        } else "N/A"
+        
+        // Find highest revenue day
+        val revenueByDay = data.groupBy { 
+            val cal = it.date.clone() as Calendar
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            cal
+        }.mapValues { it.value.sumOf { sale -> sale.revenue } }
+        
+        val maxRevenueDay = revenueByDay.maxByOrNull { it.value }
+        val revenueDayName = if (maxRevenueDay != null) {
+            val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+            dayFormat.format(maxRevenueDay.key.time)
+        } else "N/A"
+        
+        salesSpikeQty.text = "${maxQtyDay?.value ?: 0} Gallons ($qtyDayName)"
+        salesSpikeUom.text = "${maxUomDay?.value ?: 0}L ($uomDayName)"
+        salesSpikeRevenue.text = "₱${String.format("%.2f", maxRevenueDay?.value ?: 0.0)} ($revenueDayName)"
+    }
+
+    private fun updateTopCustomer(data: List<SalesData>) {
+        if (data.isEmpty()) {
+            topCustomerName.text = "No Data"
+            return
+        }
+
+        val customerTotals = data.groupBy { it.customerName }
+            .mapValues { it.value.sumOf { sale -> sale.quantity } }
+        
+        val topCustomer = customerTotals.maxByOrNull { it.value }
+        topCustomerName.text = topCustomer?.key ?: "No Data"
     }
 
     enum class ReportType {

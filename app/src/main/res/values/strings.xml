@@ -70,4 +70,5 @@
     <string name="add_seal_button">Add Seal</string>
     <string name="add_cap_cover_button">Add Cap Cover</string>
     <string name="logo_description">HydroScan Logo</string>
+    <string name="products_pricing"><![CDATA[Products & Pricing]]></string>
 </resources>

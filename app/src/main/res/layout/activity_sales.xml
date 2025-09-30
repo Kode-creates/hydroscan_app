@@ -19,6 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Sales Report Title -->
     <TextView
         android:id="@+id/salesTitle"
         android:layout_width="wrap_content"
@@ -28,202 +29,444 @@
         android:text="Sales Report"
         android:textStyle="bold"
         android:textColor="#1b5692"
-        android:textSize="16sp"
+        android:textSize="18sp"
         app:layout_constraintTop_toBottomOf="@id/logo"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fillViewport="true"
+    <!-- Calendar Button -->
+    <Button
+        android:id="@+id/calendarButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/ic_calendar"
+        android:backgroundTint="#1b5692"
         app:layout_constraintTop_toBottomOf="@id/salesTitle"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav">
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Report Type Dropdown -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/reportTypeDropdownLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:hint="Weekly"
+        app:boxStrokeColor="#1b5692"
+        app:hintTextColor="#1b5692"
+        app:startIconTint="#1b5692"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        app:layout_constraintTop_toBottomOf="@id/salesTitle"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <AutoCompleteTextView
+            android:id="@+id/reportTypeSpinner"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:textColor="#1b5692"
+            android:textSize="12sp"
+            android:inputType="none"
+            android:focusable="false" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Date Range Display -->
+    <TextView
+        android:id="@+id/dateRangeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="September 07, 2025 - September 13, 2025"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/reportTypeDropdownLayout"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Line Graph Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/graphCard"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#E3F2FD"
+        app:layout_constraintTop_toBottomOf="@id/dateRangeText">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="#ffff"
+            android:padding="16dp">
+
+            <!-- Graph Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sales Performance"
+                android:textColor="#1b5692"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Placeholder for Line Graph -->
+            <View
+                android:id="@+id/lineGraphPlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:backgroundTint="#1b5692" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Sales Spike Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/salesSpikeCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/graphCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/topCustomerCard"
+        app:layout_constraintWidth_percent="0.48">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <!-- Report Type Selection -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/reportTypeCard"
+            <!-- Card Header -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="2dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="#1b5692">
+                android:text="Sales Spike"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="#1b5692"
+                android:padding="12dp"
+                android:gravity="center" />
 
+            <!-- QTY Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:background="#F8F9FA">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="QTY:"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/salesSpikeQty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30 Gallons (Friday)"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <!-- UOM Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="UOM:"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/salesSpikeUom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="200L (Tuesday)"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <!-- Revenue Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:background="#F8F9FA">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Revenue:"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/salesSpikeRevenue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₱1,500 (Thursday)"
+                    android:textColor="#1b5692"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Top Customer Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/topCustomerCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/graphCard"
+        app:layout_constraintStart_toEndOf="@id/salesSpikeCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.48">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Card Header -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Top customer"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="#1b5692"
+                android:padding="12dp"
+                android:gravity="center" />
+
+            <!-- Customer Name -->
+            <TextView
+                android:id="@+id/topCustomerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Michelle Obama"
+                android:textColor="#1b5692"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:padding="16dp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Statistics Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/statisticsCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/salesSpikeCard">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Card Header -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Statistics"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="#1b5692"
+                android:padding="12dp"
+                android:gravity="center" />
+
+            <!-- Statistics Content -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Total Revenue Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="5dp"
-                    android:paddingBottom="20dp">
+                    android:orientation="horizontal"
+                    android:padding="8dp"
+                    android:background="#F8F9FA">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Select Report Type"
-                        android:textColor="#ffffff"
-                        android:textSize="14sp"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginTop="6dp"
+                        android:layout_weight="1"
+                        android:text="Total Revenue:"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp"
                         android:textStyle="bold" />
 
-                    <Spinner
-                        android:id="@+id/reportTypeSpinner"
-                        android:layout_width="100dp"
-                        android:layout_height="35dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginLeft="16dp"
-                        android:layout_marginRight="6dp"
-                        android:background="@drawable/custom_dropdown"
-                        android:spinnerMode="dropdown"
-                        android:popupBackground="#ffffff"
-                        android:popupElevation="8dp"
-                        android:overlapAnchor="false" />
+                    <TextView
+                        android:id="@+id/totalRevenue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₱0.00"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp" />
 
-                    <CalendarView
-                        android:id="@+id/calendarView"
-                        android:layout_width="match_parent"
-                        android:layout_height="300dp"
-                        android:layout_marginTop="8dp"
-                        android:textColor="#ffff" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
 
-            <!-- Report Table -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/reportCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="2dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="#1b5692">
-
+                <!-- Unpaid Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="5dp">
+                    android:orientation="horizontal"
+                    android:padding="8dp">
 
                     <TextView
-                        android:id="@+id/reportPeriod"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Unpaid:"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/unpaidInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Report for: April 17, 2024"
-                        android:textColor="#ffffff"
-                        android:textSize="14sp"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginTop="6dp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="16dp"/>
+                        android:text="0 qty, No customers"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp" />
 
-                    <!-- Table Header -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:background="#1b5692"
-                        android:padding="8dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.4"
-                            android:text="UOM"
-                            android:textColor="#ffffff"
-                            android:textSize="11sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.6"
-                            android:text="Quantity"
-                            android:textSize="11sp"
-                            android:textColor="#ffffff"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.7"
-                            android:text="Revenue"
-                            android:textColor="#ffffff"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Most Ordered"
-                            android:textColor="#ffffff"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-                    </LinearLayout>
-
-                    <!-- Table Content -->
-                    <LinearLayout
-                        android:id="@+id/reportTableContent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"/>
-
-                    <!-- Total Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="8dp"
-                        android:layout_marginTop="8dp"
-                        android:background="#f5f5f5">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.4"
-                            android:text="Total:"
-                            android:textStyle="bold"
-                            android:textColor="#1b5692"
-                            android:textSize="11sp"/>
-
-                        <TextView
-                            android:id="@+id/totalQuantity"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.6"
-                            android:textColor="#1b5692"
-                            android:textSize="11sp"
-                            android:gravity="center"/>
-
-                        <TextView
-                            android:id="@+id/totalRevenue"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textColor="#1b5692"
-                            android:textSize="11sp"
-                            android:gravity="center"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.5"
-                            android:gravity="center"/>
-
-                    </LinearLayout>
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+
+                <!-- Total Quantity Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp"
+                    android:background="#F8F9FA">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Total QTY:"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/totalQuantity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+                <!-- Total UOM Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Total UOM:"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/totalUom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0L"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+                <!-- Most Ordered Water Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp"
+                    android:background="#F8F9FA">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Most ordered Water:"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/mostOrderedWater"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mineral"
+                        android:textColor="#1b5692"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
         </LinearLayout>
-    </ScrollView>
+
+    </androidx.cardview.widget.CardView>
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

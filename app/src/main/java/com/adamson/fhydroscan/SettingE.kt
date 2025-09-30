@@ -2,12 +2,12 @@ package com.adamson.fhydroscan
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.button.MaterialButton
 
 class SettingE : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,7 +15,7 @@ class SettingE : AppCompatActivity() {
         setContentView(R.layout.activity_setting_e)
 
         // Set up logout button
-        val logoutButton = findViewById<MaterialButton>(R.id.logoutButton)
+        val logoutButton = findViewById<LinearLayout>(R.id.logoutButton)
         logoutButton.setOnClickListener {
             // Redirect to login page
             val intent = Intent(this, Login::class.java)

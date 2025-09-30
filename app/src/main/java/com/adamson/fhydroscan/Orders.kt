@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -82,28 +83,28 @@ class Orders : AppCompatActivity() {
 
     private fun showOrderDetailsDialog(orderDetails: OrderDetails) {
         val dialog = Dialog(this)
-        dialog.setContentView(R.layout.dialog_order_details)
+        dialog.setContentView(R.layout.dialog_order_detail)
 
-        // Set dialog title (date)
-        dialog.findViewById<TextView>(R.id.dateTitle).text = orderDetails.date
+        // Set order date
+        dialog.findViewById<TextView>(R.id.orderDate).text = "Date Ordered: ${orderDetails.date}"
 
-        // Set total quantity and sales
-        dialog.findViewById<TextView>(R.id.totalQuantity).text = orderDetails.totalQty.toString()
-        dialog.findViewById<TextView>(R.id.totalSales).text = String.format("₱%.2f", orderDetails.totalSales)
+        // Set total amount
+        dialog.findViewById<TextView>(R.id.orderTotal).text = "Total Amount: ${String.format("₱%.2f", orderDetails.totalSales)}"
 
-        // Add customers to the list
-        val customerList = dialog.findViewById<LinearLayout>(R.id.customerList)
+        // Add customers to the items list container
+        val itemsListContainer = dialog.findViewById<LinearLayout>(R.id.itemsListContainer)
         orderDetails.customers.forEach { customer ->
             val customerView = TextView(this).apply {
-                text = customer
-                textSize = 16f
-                setPadding(0, 8, 0, 8)
+                text = "• $customer"
+                textSize = 10f
+                setTextColor(resources.getColor(android.R.color.black, null))
+                setPadding(0, 4, 0, 4)
             }
-            customerList.addView(customerView)
+            itemsListContainer.addView(customerView)
         }
 
         // Set up close button
-        dialog.findViewById<View>(R.id.closeButton).setOnClickListener {
+        dialog.findViewById<Button>(R.id.closeButton).setOnClickListener {
             dialog.dismiss()
         }
 

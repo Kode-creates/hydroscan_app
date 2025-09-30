@@ -236,6 +236,7 @@
                         android:textColor="#1b5692"
                         android:textSize="9sp" />
                 </LinearLayout>
+
             </LinearLayout>
 
             <!-- Today's Orders -->

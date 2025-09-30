@@ -49,6 +49,7 @@ class Dashboard : AppCompatActivity() {
             startActivity(intent)
         }
 
+
         // Arrow click listener for Today's Orders title
         findViewById<ImageView>(R.id.ordersArrow).setOnClickListener {
             val intent = Intent(this, Today::class.java)

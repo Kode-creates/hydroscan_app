@@ -39,16 +39,19 @@ class DashboardE : AppCompatActivity() {
                     true
                 }
                 R.id.btscan2 -> {
+                    // Handle scan button click
                     startActivity(Intent(this, ScanE::class.java))
                     true
                 }
                 R.id.btsetting2 -> {
+                    // Handle settings button click
                     startActivity(Intent(this, SettingE::class.java))
                     true
                 }
                 else -> false
             }
         }
+
 
         // Update overview card with dynamic data
         updateOverviewData()
