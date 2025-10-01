@@ -80,6 +80,14 @@ dependencies {
     implementation("com.google.zxing:core:3.5.1")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     
+    // Simple chart implementation using Canvas
+    // No external chart library needed
+    
+    // PDF generation
+    implementation("com.itextpdf:itext7-core:7.2.5")
+    
+    // CSV generation - no additional dependencies needed
+    
     // Unit Testing Dependencies
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:5.8.0")

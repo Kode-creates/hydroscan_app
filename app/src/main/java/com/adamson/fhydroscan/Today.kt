@@ -25,21 +25,20 @@ class Today : AppCompatActivity() {
     private var currentTab = 0 // 0: All Orders, 1: Pendings, 2: Delivered
 
     // Define UOM options and prices
-    private val uomOptions = listOf("20L", "10L", "7L", "6L")
+    private val uomOptions = listOf("20L Slim", "10L Slim", "20L Round")
     private val waterTypes = mapOf(
         "Alkaline" to "A",
         "Mineral" to "M"
     )
     private val prices = mapOf(
         "Alkaline" to mapOf(
-            "20L" to 50.0,
-            "10L" to 25.0
+            "20L Slim" to 50.0,
+            "10L Slim" to 25.0
         ),
         "Mineral" to mapOf(
-            "20L" to 30.0,
-            "10L" to 15.0,
-            "7L" to 11.0,
-            "6L" to 10.0
+            "20L Slim" to 30.0,
+            "10L Slim" to 15.0,
+            "20L Round" to 30.0
         )
     )
 
@@ -193,10 +192,16 @@ class Today : AppCompatActivity() {
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
         
-        // Product
+        // Product - Multi-line support with bullet points
         val productText = TextView(this).apply {
-            text = order.product
-            textSize = 11f
+            // Split products by comma and create multi-line display
+            val products = order.product.split(", ").filter { it.isNotBlank() }
+            val productLines = products.mapIndexed { index, product ->
+                val bullet = if (index == 0) "•" else "  •"
+                "$bullet $product"
+            }
+            text = productLines.joinToString("\n")
+            textSize = 10f
             setTextColor(when {
                 order.product.contains(" A ") -> 0xFFF44336.toInt() // Red for Alkaline
                 order.product.contains(" M ") -> 0xFF2196F3.toInt() // Blue for Mineral
@@ -204,8 +209,9 @@ class Today : AppCompatActivity() {
             })
             setPadding(8, 0, 8, 0)
             layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 2f)
-            maxLines = 1
-            ellipsize = android.text.TextUtils.TruncateAt.END
+            maxLines = 0 // Allow unlimited lines
+            ellipsize = null // No ellipsis for multi-line
+            setLineSpacing(2f, 1.2f) // Add line spacing
         }
         
         // Total Price
@@ -475,7 +481,15 @@ class Today : AppCompatActivity() {
         // Set order details
         dialog.findViewById<TextView>(R.id.detailName).text = order.name
         dialog.findViewById<TextView>(R.id.detailAddress).text = order.address
-        dialog.findViewById<TextView>(R.id.detailProduct).text = order.product
+        
+        // Format products with bullet points for multi-line display
+        val products = order.product.split(", ").filter { it.isNotBlank() }
+        val productLines = products.mapIndexed { index, product ->
+            val bullet = if (index == 0) "•" else "  •"
+            "$bullet $product"
+        }
+        dialog.findViewById<TextView>(R.id.detailProduct).text = productLines.joinToString("\n")
+        
         dialog.findViewById<TextView>(R.id.detailTotal).text = String.format("₱%.2f", order.total)
         dialog.findViewById<TextView>(R.id.detailPayment).text = if (order.isPaid) "Paid" else "Unpaid"
         dialog.findViewById<TextView>(R.id.detailStatus).text = order.status
@@ -538,8 +552,8 @@ class Today : AppCompatActivity() {
         val nameDisplay = dialog.findViewById<TextView>(R.id.nameDisplay)
         val addressDisplay = dialog.findViewById<TextView>(R.id.addressDisplay)
         val quantityInput = dialog.findViewById<EditText>(R.id.quantityInput)
-        val uomSpinner = dialog.findViewById<Spinner>(R.id.uomSpinner)
-        val waterTypeSpinner = dialog.findViewById<Spinner>(R.id.waterTypeSpinner)
+        val uomSpinner = dialog.findViewById<AutoCompleteTextView>(R.id.uomSpinner)
+        val waterTypeSpinner = dialog.findViewById<AutoCompleteTextView>(R.id.waterTypeSpinner)
         val paymentStatusGroup = dialog.findViewById<RadioGroup>(R.id.paymentStatusGroup)
         val paidRadio = dialog.findViewById<RadioButton>(R.id.paidRadio)
         val unpaidRadio = dialog.findViewById<RadioButton>(R.id.unpaidRadio)
@@ -568,17 +582,15 @@ class Today : AppCompatActivity() {
 
         // Set up UOM spinner
         val uomOptions = arrayOf("20L", "5L", "1L", "500ml")
-        val uomAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, uomOptions)
-        uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        uomSpinner.adapter = uomAdapter
-        uomSpinner.setSelection(uomOptions.indexOf(uom))
+        val uomAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, uomOptions)
+        uomSpinner.setAdapter(uomAdapter)
+        uomSpinner.setText(uom, false)
 
         // Set up water type spinner
         val waterTypeOptions = arrayOf("A", "M")
-        val waterTypeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, waterTypeOptions)
-        waterTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        waterTypeSpinner.adapter = waterTypeAdapter
-        waterTypeSpinner.setSelection(waterTypeOptions.indexOf(waterType))
+        val waterTypeAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, waterTypeOptions)
+        waterTypeSpinner.setAdapter(waterTypeAdapter)
+        waterTypeSpinner.setText(waterType, false)
 
         // Set up payment status
         if (order.isPaid) {
@@ -591,8 +603,8 @@ class Today : AppCompatActivity() {
         dialog.findViewById<Button>(R.id.saveButton).setOnClickListener {
             try {
                 val newQuantity = quantityInput.text.toString().toIntOrNull()
-                val newUom = uomSpinner.selectedItem.toString()
-                val newWaterType = waterTypeSpinner.selectedItem.toString()
+                val newUom = uomSpinner.text.toString()
+                val newWaterType = waterTypeSpinner.text.toString()
                 val newIsPaid = paidRadio.isChecked
 
                 if (newQuantity != null && newQuantity > 0) {
@@ -749,10 +761,14 @@ class Today : AppCompatActivity() {
         dialog.setContentView(R.layout.dialog_add_order)
 
         // Initialize views
+        val productTypeSpinner = dialog.findViewById<Spinner>(R.id.productTypeSpinner)
         val uomSpinner = dialog.findViewById<Spinner>(R.id.uomSpinner)
         val waterTypeGroup = dialog.findViewById<RadioGroup>(R.id.waterTypeGroup)
         val mineralRadio = dialog.findViewById<RadioButton>(R.id.mineralRadio)
         val alkalineRadio = dialog.findViewById<RadioButton>(R.id.alkalineRadio)
+        val noRefillRadio = dialog.findViewById<RadioButton>(R.id.noRefillRadio)
+        val accessoriesLabel = dialog.findViewById<TextView>(R.id.accessoriesLabel)
+        val accessoriesSpinner = dialog.findViewById<Spinner>(R.id.accessoriesSpinner)
         val minusButton = dialog.findViewById<Button>(R.id.minusButton)
         val plusButton = dialog.findViewById<Button>(R.id.plusButton)
         val quantityDisplay = dialog.findViewById<TextView>(R.id.quantityDisplay)
@@ -762,8 +778,10 @@ class Today : AppCompatActivity() {
         
         // Data class for order items
         data class OrderItemData(
-            var uom: String,
-            var waterType: String,
+            var productType: String,
+            var uom: String?,
+            var waterType: String?,
+            var accessory: String?,
             var quantity: Int,
             var view: View
         )
@@ -771,41 +789,155 @@ class Today : AppCompatActivity() {
         // List to store additional order items (not the default one)
         val additionalItems = mutableListOf<OrderItemData>()
 
+        // Initialize product type dropdown
+        val productTypes = listOf("Water", "New Gallon", "Accessories")
+        val productTypeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, productTypes)
+        productTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        productTypeSpinner.adapter = productTypeAdapter
+        
+        // Set default selection to "Water"
+        productTypeSpinner.setSelection(0)
+
+        // Initialize accessories dropdown
+        val accessories = listOf(
+            "Small Cap Cover", 
+            "Big Cap Cover", 
+            "Round Cap Cover", 
+            "Non Leak Cover"
+        )
+        val accessoriesAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, accessories)
+        accessoriesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        accessoriesSpinner.adapter = accessoriesAdapter
+
+        // Function to update field visibility based on product type
+        fun updateFieldVisibility(productType: String) {
+            println("DEBUG: Updating field visibility for product type: $productType")
+            when (productType) {
+                "Water" -> {
+                    println("DEBUG: Setting Water fields visible")
+                    uomSpinner.visibility = View.VISIBLE
+                    waterTypeGroup.visibility = View.VISIBLE
+                    noRefillRadio.visibility = View.GONE
+                    accessoriesLabel.visibility = View.GONE
+                    accessoriesSpinner.visibility = View.GONE
+                }
+                "New Gallon" -> {
+                    println("DEBUG: Setting New Gallon fields visible")
+                    uomSpinner.visibility = View.VISIBLE
+                    waterTypeGroup.visibility = View.VISIBLE
+                    noRefillRadio.visibility = View.VISIBLE
+                    accessoriesLabel.visibility = View.GONE
+                    accessoriesSpinner.visibility = View.GONE
+                }
+                "Accessories" -> {
+                    println("DEBUG: Setting Accessories fields visible")
+                    uomSpinner.visibility = View.GONE
+                    waterTypeGroup.visibility = View.GONE
+                    noRefillRadio.visibility = View.GONE
+                    accessoriesLabel.visibility = View.VISIBLE
+                    accessoriesSpinner.visibility = View.VISIBLE
+                }
+            }
+        }
+
         // Function to update total price
         fun updateTotalPrice() {
             var total = 0.0
             
             // Calculate default item price
-            val defaultUom = uomSpinner.selectedItem.toString()
-            val defaultWaterType = if (alkalineRadio.isChecked) "Alkaline" else "Mineral"
-            val defaultQuantity = quantityDisplay.text.toString().toIntOrNull() ?: 1
-            val defaultWaterTypeCode = if (defaultWaterType == "Alkaline") "A" else "M"
-            total += calculatePrice(defaultWaterTypeCode, defaultUom, defaultQuantity)
+            val productType = productTypeSpinner.selectedItem.toString()
+            val quantity = quantityDisplay.text.toString().toIntOrNull() ?: 1
+            
+            total += when (productType) {
+                "Water" -> {
+                    val uom = uomSpinner.selectedItem.toString()
+                    val waterType = if (alkalineRadio.isChecked) "Alkaline" else "Mineral"
+                    val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
+                    calculatePrice(waterTypeCode, uom, quantity)
+                }
+                "New Gallon" -> {
+                    val uom = uomSpinner.selectedItem.toString()
+                    val waterType = when {
+                        alkalineRadio.isChecked -> "Alkaline"
+                        mineralRadio.isChecked -> "Mineral"
+                        noRefillRadio.isChecked -> "No Refill"
+                        else -> "Mineral"
+                    }
+                    val waterTypeCode = when (waterType) {
+                        "Alkaline" -> "A"
+                        "Mineral" -> "M"
+                        "No Refill" -> "NR"
+                        else -> "M"
+                    }
+                    calculatePrice(waterTypeCode, uom, quantity)
+                }
+                "Accessories" -> {
+                    val accessory = accessoriesSpinner.selectedItem.toString()
+                    calculateAccessoryPrice(accessory, quantity)
+                }
+                else -> 0.0
+            }
             
             // Calculate additional items prices
             for (item in additionalItems) {
-                val itemUomSpinner = item.view.findViewById<Spinner>(R.id.itemUomSpinner)
-                val itemWaterTypeGroup = item.view.findViewById<RadioGroup>(R.id.itemWaterTypeGroup)
-                val itemQuantityDisplay = item.view.findViewById<TextView>(R.id.itemQuantityDisplay)
-                
-                val uom = itemUomSpinner.selectedItem.toString()
-                val waterType = if (itemWaterTypeGroup.checkedRadioButtonId == R.id.itemAlkalineRadio) "Alkaline" else "Mineral"
-                val quantity = itemQuantityDisplay.text.toString().toIntOrNull() ?: 1
-                
-                val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
-                total += calculatePrice(waterTypeCode, uom, quantity)
+                total += when (item.productType) {
+                "Water" -> {
+                    val uom = item.view.findViewById<Spinner>(R.id.itemUomSpinner).selectedItem.toString()
+                        val waterType = if (item.view.findViewById<RadioButton>(R.id.itemAlkalineRadio).isChecked) "Alkaline" else "Mineral"
+                        val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
+                        calculatePrice(waterTypeCode, uom, item.quantity)
+                    }
+                    "New Gallon" -> {
+                        val uom = item.view.findViewById<Spinner>(R.id.itemUomSpinner).selectedItem.toString()
+                        val waterType = when {
+                            item.view.findViewById<RadioButton>(R.id.itemAlkalineRadio).isChecked -> "Alkaline"
+                            item.view.findViewById<RadioButton>(R.id.itemMineralRadio).isChecked -> "Mineral"
+                            item.view.findViewById<RadioButton>(R.id.itemNoRefillRadio).isChecked -> "No Refill"
+                            else -> "Mineral"
+                        }
+                        val waterTypeCode = when (waterType) {
+                            "Alkaline" -> "A"
+                            "Mineral" -> "M"
+                            "No Refill" -> "NR"
+                            else -> "M"
+                        }
+                        calculatePrice(waterTypeCode, uom, item.quantity)
+                    }
+                    "Accessories" -> {
+                        val accessory = item.view.findViewById<Spinner>(R.id.itemAccessoriesSpinner).selectedItem.toString()
+                        calculateAccessoryPrice(accessory, item.quantity)
+                    }
+                    else -> 0.0
+                }
             }
             totalPriceDisplay.text = "Total: ₱${String.format("%.2f", total)}"
         }
 
-        // Set up default UOM spinner
-        ArrayAdapter(this, android.R.layout.simple_spinner_item, uomOptions).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            uomSpinner.adapter = adapter
+        // Set up product type change listener
+        productTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedType = productTypes[position]
+                println("DEBUG: Product type selected: $selectedType")
+                updateFieldVisibility(selectedType)
+                updateTotalPrice()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
         // Set default selection (Mineral)
         mineralRadio.isChecked = true
+        
+        // Initialize field visibility based on default product type
+        updateFieldVisibility("Water")
+        
+        // Set up UOM dropdown with correct options based on default water type
+        val defaultUomOptions = listOf("20L Slim", "10L Slim", "20L Round") // Mineral options
+        val uomAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, defaultUomOptions)
+        uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        uomSpinner.adapter = uomAdapter
+        
+        // Set default UOM selection
+        uomSpinner.setSelection(0)
 
         // Default quantity counter
         var defaultQuantity = 1
@@ -830,19 +962,24 @@ class Today : AppCompatActivity() {
             val selectedWaterType = when (checkedId) {
                 R.id.alkalineRadio -> "Alkaline"
                 R.id.mineralRadio -> "Mineral"
+                R.id.noRefillRadio -> "No Refill"
                 else -> "Mineral"
             }
             
             val availableUOMs = when (selectedWaterType) {
-                "Alkaline" -> listOf("20L", "10L")
+                "Alkaline" -> listOf("20L Slim", "10L Slim")
                 "Mineral" -> uomOptions
+                "No Refill" -> uomOptions
                 else -> uomOptions
             }
             
-            ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs).also { adapter ->
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                uomSpinner.adapter = adapter
-            }
+            val uomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs)
+            uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            uomSpinner.adapter = uomAdapter
+            
+            // Set the first available UOM as selected
+            uomSpinner.setSelection(0)
+            
             updateTotalPrice()
         }
 
@@ -850,23 +987,80 @@ class Today : AppCompatActivity() {
         fun addItemRow() {
             val itemView = layoutInflater.inflate(R.layout.item_order_row, itemsContainer, false)
             
+            val itemProductTypeSpinner = itemView.findViewById<Spinner>(R.id.itemProductTypeSpinner)
             val itemUomSpinner = itemView.findViewById<Spinner>(R.id.itemUomSpinner)
             val itemWaterTypeGroup = itemView.findViewById<RadioGroup>(R.id.itemWaterTypeGroup)
             val itemMineralRadio = itemView.findViewById<RadioButton>(R.id.itemMineralRadio)
             val itemAlkalineRadio = itemView.findViewById<RadioButton>(R.id.itemAlkalineRadio)
+            val itemNoRefillRadio = itemView.findViewById<RadioButton>(R.id.itemNoRefillRadio)
+            val itemAccessoriesRow = itemView.findViewById<LinearLayout>(R.id.itemAccessoriesRow)
+            val itemAccessoriesSpinner = itemView.findViewById<Spinner>(R.id.itemAccessoriesSpinner)
             val itemMinusButton = itemView.findViewById<Button>(R.id.itemMinusButton)
             val itemPlusButton = itemView.findViewById<Button>(R.id.itemPlusButton)
             val itemQuantityDisplay = itemView.findViewById<TextView>(R.id.itemQuantityDisplay)
             val removeButton = itemView.findViewById<Button>(R.id.itemRemoveButton)
             
-            // Set up UOM spinner
-            ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, uomOptions).also { adapter ->
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                itemUomSpinner.adapter = adapter
-            }
+            // Set up product type dropdown
+            val itemProductTypeAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, productTypes)
+            itemProductTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            itemProductTypeSpinner.adapter = itemProductTypeAdapter
+            itemProductTypeSpinner.setSelection(0)
+            
+            // Set up UOM dropdown with correct options based on default water type
+            val defaultUomOptions = listOf("20L Slim", "10L Slim", "20L Round") // Mineral options
+            val itemUomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, defaultUomOptions)
+            itemUomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            itemUomSpinner.adapter = itemUomAdapter
+            itemUomSpinner.setSelection(0)
+            
+            // Set up accessories dropdown
+            val itemAccessoriesAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, accessories)
+            itemAccessoriesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            itemAccessoriesSpinner.adapter = itemAccessoriesAdapter
+            itemAccessoriesSpinner.setSelection(0)
             
             // Set default selection (Mineral)
             itemMineralRadio.isChecked = true
+            
+            // Function to update field visibility for this item
+            fun updateItemFieldVisibility(productType: String) {
+                when (productType) {
+                    "Water" -> {
+                        itemUomSpinner.visibility = View.VISIBLE
+                        itemWaterTypeGroup.visibility = View.VISIBLE
+                        itemNoRefillRadio.visibility = View.GONE
+                        itemAccessoriesRow.visibility = View.GONE
+                    }
+                    "New Gallon" -> {
+                        itemUomSpinner.visibility = View.VISIBLE
+                        itemWaterTypeGroup.visibility = View.VISIBLE
+                        itemNoRefillRadio.visibility = View.VISIBLE
+                        itemAccessoriesRow.visibility = View.GONE
+                    }
+                    "Accessories" -> {
+                        itemUomSpinner.visibility = View.GONE
+                        itemWaterTypeGroup.visibility = View.GONE
+                        itemNoRefillRadio.visibility = View.GONE
+                        itemAccessoriesRow.visibility = View.VISIBLE
+                    }
+                }
+            }
+            
+            // Initialize field visibility based on default product type
+            updateItemFieldVisibility("Water")
+            
+            // Set up product type change listener
+            itemProductTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    val selectedType = productTypes[position]
+                    updateItemFieldVisibility(selectedType)
+                    // Update the order item data
+                    val existingItem = additionalItems.find { it.view == itemView }
+                    existingItem?.productType = selectedType
+                    updateTotalPrice()
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
             
             // Quantity counter
             var quantity = 1
@@ -876,6 +1070,9 @@ class Today : AppCompatActivity() {
                 if (quantity > 1) {
                     quantity--
                     itemQuantityDisplay.text = quantity.toString()
+                    // Update the order item data
+                    val existingItem = additionalItems.find { it.view == itemView }
+                    existingItem?.quantity = quantity
                     updateTotalPrice()
                 }
             }
@@ -883,6 +1080,9 @@ class Today : AppCompatActivity() {
             itemPlusButton.setOnClickListener {
                 quantity++
                 itemQuantityDisplay.text = quantity.toString()
+                // Update the order item data
+                val existingItem = additionalItems.find { it.view == itemView }
+                existingItem?.quantity = quantity
                 updateTotalPrice()
             }
             
@@ -891,19 +1091,24 @@ class Today : AppCompatActivity() {
                 val selectedWaterType = when (checkedId) {
                     R.id.itemAlkalineRadio -> "Alkaline"
                     R.id.itemMineralRadio -> "Mineral"
+                    R.id.itemNoRefillRadio -> "No Refill"
                     else -> "Mineral"
                 }
                 
                 val availableUOMs = when (selectedWaterType) {
-                    "Alkaline" -> listOf("20L", "10L")
+                    "Alkaline" -> listOf("20L Slim", "10L Slim")
                     "Mineral" -> uomOptions
+                    "No Refill" -> uomOptions
                     else -> uomOptions
                 }
                 
-                ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs).also { adapter ->
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    itemUomSpinner.adapter = adapter
-                }
+                val itemUomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs)
+                itemUomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                itemUomSpinner.adapter = itemUomAdapter
+                
+                // Set the first available UOM as selected
+                itemUomSpinner.setSelection(0)
+                
                 updateTotalPrice()
             }
             
@@ -916,8 +1121,10 @@ class Today : AppCompatActivity() {
             
             // Create order item data
             val orderItem = OrderItemData(
+                productType = itemProductTypeSpinner.selectedItem.toString(),
                 uom = itemUomSpinner.selectedItem.toString(),
                 waterType = if (itemAlkalineRadio.isChecked) "Alkaline" else "Mineral",
+                accessory = itemAccessoriesSpinner.selectedItem.toString(),
                 quantity = quantity,
                 view = itemView
             )
@@ -948,32 +1155,87 @@ class Today : AppCompatActivity() {
                     var totalPrice = 0.0
                     
                     // Add default item
-                    val defaultUom = uomSpinner.selectedItem.toString()
-                    val defaultWaterType = if (alkalineRadio.isChecked) "Alkaline" else "Mineral"
-                    val defaultQuantity = quantityDisplay.text.toString().toIntOrNull() ?: 1
-                    val defaultWaterTypeCode = if (defaultWaterType == "Alkaline") "A" else "M"
-                    val defaultItemPrice = calculatePrice(defaultWaterTypeCode, defaultUom, defaultQuantity)
-                    totalPrice += defaultItemPrice
-                    productStrings.add("${defaultUom} ${defaultWaterTypeCode} x${defaultQuantity}")
+                    val productType = productTypeSpinner.selectedItem.toString()
+                    val quantity = quantityDisplay.text.toString().toIntOrNull() ?: 1
+                    
+                    val defaultItemString = when (productType) {
+                        "Water" -> {
+                            val uom = uomSpinner.selectedItem.toString()
+                            val waterType = if (alkalineRadio.isChecked) "Alkaline" else "Mineral"
+                            val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
+                            val price = calculatePrice(waterTypeCode, uom, quantity)
+                            totalPrice += price
+                            "${uom} ${waterTypeCode} x${quantity}"
+                        }
+                        "New Gallon" -> {
+                            val uom = uomSpinner.selectedItem.toString()
+                            val waterType = when {
+                                alkalineRadio.isChecked -> "Alkaline"
+                                mineralRadio.isChecked -> "Mineral"
+                                noRefillRadio.isChecked -> "No Refill"
+                                else -> "Mineral"
+                            }
+                            val waterTypeCode = when (waterType) {
+                                "Alkaline" -> "A"
+                                "Mineral" -> "M"
+                                "No Refill" -> "NR"
+                                else -> "M"
+                            }
+                            val price = calculatePrice(waterTypeCode, uom, quantity)
+                            totalPrice += price
+                            "${uom} ${waterTypeCode} x${quantity}"
+                        }
+                        "Accessories" -> {
+                            val accessory = accessoriesSpinner.selectedItem.toString()
+                            val price = calculateAccessoryPrice(accessory, quantity)
+                            totalPrice += price
+                            "${accessory} x${quantity}"
+                        }
+                        else -> ""
+                    }
+                    productStrings.add(defaultItemString)
                     
                     // Add additional items
                     for (item in additionalItems) {
-                        val itemUomSpinner = item.view.findViewById<Spinner>(R.id.itemUomSpinner)
-                        val itemWaterTypeGroup = item.view.findViewById<RadioGroup>(R.id.itemWaterTypeGroup)
-                        val itemQuantityDisplay = item.view.findViewById<TextView>(R.id.itemQuantityDisplay)
-                        
-                        val uom = itemUomSpinner.selectedItem.toString()
-                        val waterType = if (itemWaterTypeGroup.checkedRadioButtonId == R.id.itemAlkalineRadio) "Alkaline" else "Mineral"
-                        val quantity = itemQuantityDisplay.text.toString().toIntOrNull() ?: 1
-                        
-                        val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
-                        val itemPrice = calculatePrice(waterTypeCode, uom, quantity)
-                        totalPrice += itemPrice
-                        
-                        productStrings.add("${uom} ${waterTypeCode} x${quantity}")
+                        val itemString = when (item.productType) {
+                            "Water" -> {
+                                val uom = item.view.findViewById<Spinner>(R.id.itemUomSpinner).selectedItem.toString()
+                                val waterType = if (item.view.findViewById<RadioButton>(R.id.itemAlkalineRadio).isChecked) "Alkaline" else "Mineral"
+                                val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
+                                val price = calculatePrice(waterTypeCode, uom, item.quantity)
+                                totalPrice += price
+                                "${uom} ${waterTypeCode} x${item.quantity}"
+                            }
+                            "New Gallon" -> {
+                                val uom = item.view.findViewById<Spinner>(R.id.itemUomSpinner).selectedItem.toString()
+                                val waterType = when {
+                                    item.view.findViewById<RadioButton>(R.id.itemAlkalineRadio).isChecked -> "Alkaline"
+                                    item.view.findViewById<RadioButton>(R.id.itemMineralRadio).isChecked -> "Mineral"
+                                    item.view.findViewById<RadioButton>(R.id.itemNoRefillRadio).isChecked -> "No Refill"
+                                    else -> "Mineral"
+                                }
+                                val waterTypeCode = when (waterType) {
+                                    "Alkaline" -> "A"
+                                    "Mineral" -> "M"
+                                    "No Refill" -> "NR"
+                                    else -> "M"
+                                }
+                                val price = calculatePrice(waterTypeCode, uom, item.quantity)
+                                totalPrice += price
+                                "${uom} ${waterTypeCode} x${item.quantity}"
+                            }
+                            "Accessories" -> {
+                                val accessory = item.view.findViewById<Spinner>(R.id.itemAccessoriesSpinner).selectedItem.toString()
+                                val price = calculateAccessoryPrice(accessory, item.quantity)
+                                totalPrice += price
+                                "${accessory} x${item.quantity}"
+                            }
+                            else -> ""
+                        }
+                        productStrings.add(itemString)
                     }
                     
-                    val product = productStrings.joinToString(", ")
+                    val product = productStrings.joinToString("\n") // Use newline instead of comma for better display
                     
                     val order = CustomerOrder(
                         name = name,
@@ -1002,7 +1264,35 @@ class Today : AppCompatActivity() {
     }
 
     private fun calculatePrice(waterType: String, uom: String, quantity: Int): Double {
-        val fullWaterType = waterTypes.entries.find { it.value == waterType }?.key ?: return 0.0
-        return (prices[fullWaterType]?.get(uom) ?: 0.0) * quantity
+        return when (waterType) {
+            "A" -> {
+                val fullWaterType = "Alkaline"
+                (prices[fullWaterType]?.get(uom) ?: 0.0) * quantity
+            }
+            "M" -> {
+                val fullWaterType = "Mineral"
+                (prices[fullWaterType]?.get(uom) ?: 0.0) * quantity
+            }
+            "NR" -> {
+                // No refill - just the gallon price (accessory price)
+                val gallonPrices = mapOf(
+                    "20L Slim" to 200.0,  // Slim gallon
+                    "10L Slim" to 200.0,  // Slim gallon
+                    "20L Round" to 200.0  // Round gallon
+                )
+                (gallonPrices[uom] ?: 0.0) * quantity
+            }
+            else -> 0.0
+        }
+    }
+
+    private fun calculateAccessoryPrice(accessory: String, quantity: Int): Double {
+        val accessoryPrices = mapOf(
+            "Small Cap Cover" to 10.0,
+            "Big Cap Cover" to 25.0,
+            "Round Cap Cover" to 5.0,
+            "Non Leak Cover" to 3.0
+        )
+        return (accessoryPrices[accessory] ?: 0.0) * quantity
     }
 }
