@@ -15,12 +15,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.adamson.fhydroscan.adapter.OrderAdapter
+import com.adamson.fhydroscan.OrderHistoryAdapter
 import com.adamson.fhydroscan.data.Order
 import com.adamson.fhydroscan.data.OrderItem
 import com.adamson.fhydroscan.data.OrderStatus
 import com.adamson.fhydroscan.database.DatabaseHelper
-import com.adamson.fhydroscan.database.HydroCoinDatabaseHelper
 import com.adamson.fhydroscan.database.OrderDatabaseHelper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.text.SimpleDateFormat
@@ -30,8 +29,7 @@ class OrderHistory : AppCompatActivity() {
     private val TAG = "OrderHistoryActivity"
     private lateinit var orderDatabaseHelper: OrderDatabaseHelper
     private lateinit var userDatabaseHelper: DatabaseHelper
-    private lateinit var hydroCoinDatabaseHelper: HydroCoinDatabaseHelper
-    private lateinit var orderAdapter: OrderAdapter
+    private lateinit var orderAdapter: OrderHistoryAdapter
     private lateinit var ordersRecyclerView: RecyclerView
     private lateinit var emptyOrdersText: TextView
     private var currentUserId: String = ""
@@ -44,7 +42,6 @@ class OrderHistory : AppCompatActivity() {
             // Initialize database and get current user
             orderDatabaseHelper = OrderDatabaseHelper(this)
             userDatabaseHelper = DatabaseHelper(this)
-            hydroCoinDatabaseHelper = HydroCoinDatabaseHelper(this)
             getCurrentUserId()
             
             // Setup UI components
@@ -65,7 +62,7 @@ class OrderHistory : AppCompatActivity() {
             emptyOrdersText = findViewById(R.id.emptyOrdersText)
             
             // Setup RecyclerView
-            orderAdapter = OrderAdapter(emptyList()) { order ->
+            orderAdapter = OrderHistoryAdapter(mutableListOf()) { order ->
                 showOrderDetailDialog(order)
             }
             ordersRecyclerView.layoutManager = LinearLayoutManager(this)

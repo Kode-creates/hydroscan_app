@@ -25,4 +25,15 @@
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:backgroundDimAmount">0.5</item>
     </style>
+
+    <style name="CalendarTheme" parent="Theme.MaterialComponents.DayNight">
+        <item name="colorPrimary">#1b5692</item>
+        <item name="colorPrimaryDark">#154672</item>
+        <item name="colorAccent">#1b5692</item>
+        <item name="android:textColorPrimary">#1b5692</item>
+        <item name="android:textColorSecondary">#666666</item>
+        <item name="android:textColorTertiary">#999999</item>
+        <item name="android:colorControlHighlight">#E3F2FD</item>
+        <item name="android:colorControlActivated">#1b5692</item>
+    </style>
 </resources>

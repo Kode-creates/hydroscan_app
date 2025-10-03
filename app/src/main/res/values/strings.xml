@@ -25,12 +25,6 @@
 
     <!-- Order Screen -->
     <string name="order_history">Order History</string>
-    <string name="april">April</string>
-    <string name="april_17">April 17</string>
-    <string name="april_16">April 16</string>
-    <string name="april_15">April 15</string>
-    <string name="total_qty_34">Total Qty: 34</string>
-    <string name="total_sales_1296">Total Sales: ₱1,296</string>
     <string name="total_quantity">Total Quantity:</string>
     <string name="total_sales">Total Sales:</string>
     <string name="customers">Customers</string>
@@ -71,4 +65,7 @@
     <string name="add_cap_cover_button">Add Cap Cover</string>
     <string name="logo_description">HydroScan Logo</string>
     <string name="products_pricing"><![CDATA[Products & Pricing]]></string>
+    
+    <!-- Month Labels -->
+    <string name="april">April</string>
 </resources>

@@ -87,23 +87,23 @@
                         android:gravity="center"
                         android:layout_marginTop="8dp">
 
-                        <!-- Gallon count -->
+                        <!-- Orders count -->
                         <TextView
-                            android:id="@+id/gallonsCount"
-                            android:text="25"
-                            android:textSize="17sp"
+                            android:id="@+id/ordersCount"
+                            android:text="0"
+                            android:textSize="14sp"
                             android:textColor="#fffafa"
                             android:textStyle="bold"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
 
-                        <!-- Gallon name -->
+                        <!-- Orders name -->
                         <TextView
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:text="Gallons"
+                            android:text="Orders"
                             android:textColor="#fffafa"
-                            android:textSize="14sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
 
                     <!-- Revenue -->
@@ -119,8 +119,8 @@
                             android:id="@+id/revenueAmount"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:text="₱950"
-                            android:textSize="17sp"
+                            android:text="₱0.00"
+                            android:textSize="13sp"
                             android:textColor="#fffafa"
                             android:textStyle="bold" />
                         <TextView
@@ -128,7 +128,7 @@
                             android:layout_width="wrap_content"
                             android:text="Revenue"
                             android:textColor="#fffafa"
-                            android:textSize="14sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
 
                     <!-- Pending -->
@@ -144,8 +144,8 @@
                             android:id="@+id/pendingCount"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"
-                            android:text="4"
-                            android:textSize="17sp"
+                            android:text="0"
+                            android:textSize="14sp"
                             android:textColor="#fffafa"
                             android:textStyle="bold" />
 
@@ -154,7 +154,7 @@
                             android:layout_width="wrap_content"
                             android:text="Pending"
                             android:textColor="#fffafa"
-                            android:textSize="14sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -163,7 +163,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/ordersCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="140dp"
                 android:layout_marginTop="30dp"
                 android:clickable="true"
                 android:focusable="true"
@@ -174,255 +174,72 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="16dp">
 
-                    <!-- TO Title Text with Image -->
+                    <!-- Header Title -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Today's Orders"
+                        android:textSize="14sp"
+                        android:textColor="#fffafa"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Content Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:gravity="center_vertical">
+
+                    <!-- Left Side - Orders Count -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:layout_marginEnd="16dp">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:id="@+id/todaysOrdersCount"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Today's Orders"
-                            android:textStyle="bold"
-                            android:textSize="13sp"
-                            android:textColor="#fffafa"/>
+                            android:text="0"
+                            android:textSize="18sp"
+                            android:textColor="#fffafa"
+                            android:textStyle="bold"/>
 
-                        <ImageView
-                            android:id="@+id/ordersArrow"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/warrw"
-                            android:contentDescription="Arrow icon"/>
-
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Orders"
+                            android:textSize="12sp"
+                            android:textColor="#fffafa"
+                            android:layout_marginTop="4dp"/>
                     </LinearLayout>
 
-                    <!-- Customer list -->
+                    <!-- Right Side - Customer List -->
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_marginTop="8dp">
+                        android:gravity="start">
 
-                        <!-- Header Row -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <TextView
+                            android:id="@+id/customerListText"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="8dp">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="2"
-                                android:text="Name"
-                                android:textColor="#fffafa"
-                                android:textSize="11sp"
-                                android:textStyle="bold"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Type"
-                                android:textColor="#fffafa"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Qty"
-                                android:textColor="#fffafa"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.2"
-                                android:text="Total"
-                                android:textColor="#fffafa"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Status"
-                                android:textColor="#fffafa"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:gravity="center"/>
-                        </LinearLayout>
-
-                        <!-- Customer 1: Michelle -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="4dp">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="2"
-                                android:text="Michelle"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="A"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="2"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.2"
-                                android:text="₱100"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="P"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-                        </LinearLayout>
-
-                        <!-- Customer 2: Wilson -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="4dp">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="2"
-                                android:text="Wilson"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="M"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="3"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.2"
-                                android:text="₱90"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="UP"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-                        </LinearLayout>
-
-                        <!-- Customer 3: Mark -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="4dp">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="2"
-                                android:text="Mark"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="1"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="1"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.2"
-                                android:text="₱15"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="P"
-                                android:textColor="#fffafa"
-                                android:textSize="10sp"
-                                android:gravity="center"/>
-                        </LinearLayout>
+                            android:text="No recent orders"
+                            android:textColor="#fffafa"
+                            android:textSize="12sp"
+                            android:lineSpacingMultiplier="1.4"/>
+                    </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

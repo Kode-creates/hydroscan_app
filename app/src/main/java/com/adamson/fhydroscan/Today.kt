@@ -1,11 +1,15 @@
 package com.adamson.fhydroscan
 
 import android.app.Dialog
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.adamson.fhydroscan.data.Order
 import com.adamson.fhydroscan.data.OrderItem
 import com.adamson.fhydroscan.database.OrderDatabaseHelper
@@ -17,11 +21,14 @@ class Today : AppCompatActivity() {
 
     private val customerOrders = mutableListOf<CustomerOrder>()
     private val filteredOrders = mutableListOf<CustomerOrder>()
-    private lateinit var ordersTable: TableLayout
+    private lateinit var ordersRecyclerView: RecyclerView
+    private lateinit var orderAdapter: OrderRecyclerAdapter
     private lateinit var quickTotalQtyText: TextView
     private lateinit var quickRevenueText: TextView
     private lateinit var orderDatabaseHelper: OrderDatabaseHelper
     private lateinit var summaryHandle: LinearLayout
+    private lateinit var tabLayout: TabLayout
+    private lateinit var sharedPreferences: SharedPreferences
     private var currentTab = 0 // 0: All Orders, 1: Pendings, 2: Delivered
 
     // Define UOM options and prices
@@ -33,7 +40,8 @@ class Today : AppCompatActivity() {
     private val prices = mapOf(
         "Alkaline" to mapOf(
             "20L Slim" to 50.0,
-            "10L Slim" to 25.0
+            "10L Slim" to 25.0,
+            "20L Round" to 50.0
         ),
         "Mineral" to mapOf(
             "20L Slim" to 30.0,
@@ -51,30 +59,84 @@ class Today : AppCompatActivity() {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             supportActionBar?.setDisplayShowHomeEnabled(true)
 
-            // Initialize database helper
-            orderDatabaseHelper = OrderDatabaseHelper(this)
+            // Initialize database helpers
+            try {
+                orderDatabaseHelper = OrderDatabaseHelper(this)
+                sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                println("DEBUG: Database helpers initialized successfully")
+            } catch (e: Exception) {
+                println("DEBUG: Error initializing database helpers: ${e.message}")
+                e.printStackTrace()
+                throw e // Re-throw to be caught by outer try-catch
+            }
 
             // Initialize views
-            ordersTable = findViewById(R.id.ordersTable)
-            quickTotalQtyText = findViewById(R.id.quickTotalQty)
-            quickRevenueText = findViewById(R.id.quickRevenue)
-            summaryHandle = findViewById(R.id.summaryHandle)
+            try {
+                ordersRecyclerView = findViewById(R.id.ordersRecyclerView)
+                quickTotalQtyText = findViewById(R.id.quickTotalQty)
+                quickRevenueText = findViewById(R.id.quickRevenue)
+                summaryHandle = findViewById(R.id.summaryHandle)
+                tabLayout = findViewById(R.id.tabLayout)
+                println("DEBUG: Views initialized successfully")
+            } catch (e: Exception) {
+                println("DEBUG: Error initializing views: ${e.message}")
+                e.printStackTrace()
+                throw e // Re-throw to be caught by outer try-catch
+            }
             
-            // Debug TableLayout setup
-            println("DEBUG: TableLayout setup complete")
+            // Setup RecyclerView with OrderRecyclerAdapter
+            try {
+                orderAdapter = OrderRecyclerAdapter(filteredOrders) { order, position ->
+                    showOrderActionMenu(order, position)
+                }
+                ordersRecyclerView.layoutManager = LinearLayoutManager(this)
+                ordersRecyclerView.adapter = orderAdapter
+                println("DEBUG: RecyclerView setup completed successfully")
+            } catch (e: Exception) {
+                println("DEBUG: Error setting up RecyclerView: ${e.message}")
+                e.printStackTrace()
+                throw e // Re-throw to be caught by outer try-catch
+            }
+            
 
             // Set up summary bottom sheet
-            setupSummaryBottomSheet()
+            try {
+                setupSummaryBottomSheet()
+                println("DEBUG: Summary bottom sheet setup completed successfully")
+            } catch (e: Exception) {
+                println("DEBUG: Error setting up summary bottom sheet: ${e.message}")
+                e.printStackTrace()
+                throw e
+            }
 
-            // Load today's orders from database FIRST
-            loadTodaysOrders()
+            // Load today's orders from database
+            try {
+                loadTodaysOrders()
+                println("DEBUG: Load today's orders completed successfully")
+            } catch (e: Exception) {
+                println("DEBUG: Error loading today's orders: ${e.message}")
+                e.printStackTrace()
+                throw e
+            }
+            
+            
+            // Load orders for current tab to populate RecyclerView
+            try {
+                loadOrdersForCurrentTab()
+                println("DEBUG: After loadOrdersForCurrentTab - filteredOrders.size: ${filteredOrders.size}")
+                println("DEBUG: After loadOrdersForCurrentTab - adapter.itemCount: ${orderAdapter.itemCount}")
+                
+            } catch (e: Exception) {
+                Toast.makeText(this, "Data loading error: ${e.message}", Toast.LENGTH_LONG).show()
+                e.printStackTrace()
+            }
+            
 
             // Set up tab layout
-            val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
-            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            try {
+                tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     currentTab = tab?.position ?: 0
-                    println("DEBUG: Tab selected - position: $currentTab")
                     loadOrdersForCurrentTab()
                     updateSummaryVisibility()
                 }
@@ -84,8 +146,26 @@ class Today : AppCompatActivity() {
             
             // Update tab labels with counts
             updateTabLabels()
+            
+            println("DEBUG: Tab layout setup completed successfully")
+            } catch (e: Exception) {
+                println("DEBUG: Error setting up tab layout: ${e.message}")
+                e.printStackTrace()
+                throw e
+            }
 
             // Set up add order button
+            findViewById<FloatingActionButton>(R.id.addOrderButton).setOnClickListener {
+                showAddOrderDialog()
+            }
+            
+            // Set up long press on add order button to clear all orders
+            findViewById<FloatingActionButton>(R.id.addOrderButton).setOnLongClickListener {
+                clearAllOrders()
+                true
+            }
+            
+            // Set up add order button click listener
             findViewById<FloatingActionButton>(R.id.addOrderButton).setOnClickListener {
                 showAddOrderDialog()
             }
@@ -95,12 +175,8 @@ class Today : AppCompatActivity() {
             // Ensure the first tab is selected and data is loaded
             tabLayout.selectTab(tabLayout.getTabAt(0))
             currentTab = 0
-            loadOrdersForCurrentTab()
             
-            // Test TableLayout visibility after a short delay to ensure layout is complete
-            ordersTable.post {
-                testTableLayoutVisibility()
-            }
+            // RecyclerView setup complete
         } catch (e: Exception) {
             Toast.makeText(this, "Error initializing Today page: ${e.message}", Toast.LENGTH_LONG).show()
             e.printStackTrace()
@@ -125,6 +201,11 @@ class Today : AppCompatActivity() {
             
             println("DEBUG: loadTodaysOrders - Loaded ${customerOrders.size} orders from database")
             
+            // Debug: Print all loaded orders
+            customerOrders.forEachIndexed { index, order ->
+                println("DEBUG: Order $index: ${order.name} - ${order.address} - ${order.product} - ${order.total}")
+            }
+            
             // Load orders for current tab
             loadOrdersForCurrentTab()
         } catch (e: Exception) {
@@ -132,10 +213,93 @@ class Today : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+    
+    private fun clearAllOrders() {
+        AlertDialog.Builder(this)
+            .setTitle("Clear All Customer Data")
+            .setMessage("Are you sure you want to delete ALL customer orders, cart items, and related data? This action cannot be undone.")
+            .setPositiveButton("Delete All") { _, _ ->
+                try {
+                    println("DEBUG: Starting to clear all customer data...")
+                    
+                    // Clear from all database tables
+                    val orderSuccess = orderDatabaseHelper.clearAllData()
+                    val cartSuccess = clearCartData()
+                    val inventorySuccess = clearInventoryData()
+                    val pricingSuccess = clearPricingData()
+                    
+                    println("DEBUG: Clear results - Orders: $orderSuccess, Cart: $cartSuccess, Inventory: $inventorySuccess, Pricing: $pricingSuccess")
+                    
+                    if (orderSuccess && cartSuccess) {
+                        // Clear from memory
+                        customerOrders.clear()
+                        filteredOrders.clear()
+                        orderAdapter.updateOrders(filteredOrders)
+                        updateSummary()
+                        updateTabLabels()
+                        Toast.makeText(this, "All customer data cleared successfully", Toast.LENGTH_SHORT).show()
+                        println("DEBUG: All data cleared successfully")
+                    } else {
+                        Toast.makeText(this, "Some data clearing failed, but orders cleared", Toast.LENGTH_SHORT).show()
+                        println("DEBUG: Some data clearing failed")
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error clearing data: ${e.message}", Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun clearCartData(): Boolean {
+        return try {
+            val cartHelper = com.adamson.fhydroscan.database.CartDatabaseHelper(this)
+            // Clear all cart items
+            val db = cartHelper.writableDatabase
+            val deleted = db.delete("cart_items", null, null)
+            db.close()
+            println("DEBUG: clearCartData - Deleted $deleted cart items")
+            true
+        } catch (e: Exception) {
+            println("DEBUG: clearCartData - Error: ${e.message}")
+            e.printStackTrace()
+            false
+        }
+    }
+    
+    
+    private fun clearInventoryData(): Boolean {
+        return try {
+            val inventoryHelper = com.adamson.fhydroscan.database.InventoryDatabaseHelper(this)
+            val db = inventoryHelper.writableDatabase
+            val deleted = db.delete("inventory", null, null)
+            db.close()
+            println("DEBUG: clearInventoryData - Deleted $deleted inventory records")
+            true
+        } catch (e: Exception) {
+            println("DEBUG: clearInventoryData - Error: ${e.message}")
+            e.printStackTrace()
+            false
+        }
+    }
+    
+    private fun clearPricingData(): Boolean {
+        return try {
+            val pricingHelper = com.adamson.fhydroscan.database.PricingDatabaseHelper(this)
+            val db = pricingHelper.writableDatabase
+            val deleted = db.delete("product_prices", null, null)
+            db.close()
+            println("DEBUG: clearPricingData - Deleted $deleted pricing records")
+            true
+        } catch (e: Exception) {
+            println("DEBUG: clearPricingData - Error: ${e.message}")
+            e.printStackTrace()
+            false
+        }
+    }
 
     private fun loadOrdersForCurrentTab() {
-        println("DEBUG: loadOrdersForCurrentTab - currentTab: $currentTab, customerOrders.size: ${customerOrders.size}")
-        
         val newFilteredOrders = when (currentTab) {
             0 -> customerOrders // All Orders
             1 -> customerOrders.filter { it.status == "Pending" } // Pendings
@@ -143,129 +307,20 @@ class Today : AppCompatActivity() {
             else -> customerOrders
         }
         
-        println("DEBUG: loadOrdersForCurrentTab - newFilteredOrders.size: ${newFilteredOrders.size}")
+        // Sort orders: delivered orders go to bottom, new orders go to end
+        val sortedOrders = newFilteredOrders.sortedWith(compareBy<CustomerOrder> { it.status == "Delivered" }
+            .thenByDescending { it.name }) // New orders (by name) go to end
         
         filteredOrders.clear()
-        filteredOrders.addAll(newFilteredOrders)
+        filteredOrders.addAll(sortedOrders)
         
-        println("DEBUG: loadOrdersForCurrentTab - filteredOrders.size after addAll: ${filteredOrders.size}")
+        // Update RecyclerView adapter
+        orderAdapter.updateOrders(filteredOrders)
         
-        // Populate the TableLayout with filtered orders
-        populateTableLayout()
-        
-        println("DEBUG: Loaded ${filteredOrders.size} orders for tab $currentTab")
-        filteredOrders.forEach { order ->
-            println("DEBUG: Order - ${order.name}: ${order.product} - ${order.status}")
-        }
+        updateSummary()
     }
 
-    private fun populateTableLayout() {
-        // Clear existing rows
-        ordersTable.removeAllViews()
-        
-        // Add each order as a table row
-        filteredOrders.forEachIndexed { index, order ->
-            val row = createTableRow(order, index)
-            ordersTable.addView(row)
-        }
-    }
-    
-    private fun createTableRow(order: CustomerOrder, position: Int): TableRow {
-        val row = TableRow(this)
-        row.setPadding(8, 12, 8, 12)
-        
-        // Set alternating row background
-        if (position % 2 == 0) {
-            row.setBackgroundColor(0xFFFFFFFF.toInt())
-        } else {
-            row.setBackgroundColor(0xFFF8F8F8.toInt())
-        }
-        
-        // Customer Name
-        val nameText = TextView(this).apply {
-            text = order.name
-            textSize = 11f
-            setTextColor(0xFF000000.toInt())
-            setPadding(8, 0, 8, 0)
-            layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 2f)
-            maxLines = 1
-            ellipsize = android.text.TextUtils.TruncateAt.END
-        }
-        
-        // Product - Multi-line support with bullet points
-        val productText = TextView(this).apply {
-            // Split products by comma and create multi-line display
-            val products = order.product.split(", ").filter { it.isNotBlank() }
-            val productLines = products.mapIndexed { index, product ->
-                val bullet = if (index == 0) "•" else "  •"
-                "$bullet $product"
-            }
-            text = productLines.joinToString("\n")
-            textSize = 10f
-            setTextColor(when {
-                order.product.contains(" A ") -> 0xFFF44336.toInt() // Red for Alkaline
-                order.product.contains(" M ") -> 0xFF2196F3.toInt() // Blue for Mineral
-                else -> 0xFF000000.toInt() // Black for others
-            })
-            setPadding(8, 0, 8, 0)
-            layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 2f)
-            maxLines = 0 // Allow unlimited lines
-            ellipsize = null // No ellipsis for multi-line
-            setLineSpacing(2f, 1.2f) // Add line spacing
-        }
-        
-        // Total Price
-        val totalText = TextView(this).apply {
-            text = String.format("₱%.2f", order.total)
-            textSize = 10f
-            setTextColor(0xFF000000.toInt())
-            setPadding(8, 0, 8, 0)
-            layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-            gravity = android.view.Gravity.END
-        }
-        
-        // Payment Status
-        val paymentText = TextView(this).apply {
-            text = if (order.isPaid) "P" else "UP"
-            textSize = 11f
-            setTextColor(if (order.isPaid) 0xFF4CAF50.toInt() else 0xFFF44336.toInt())
-            setPadding(8, 0, 8, 0)
-            layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-            gravity = android.view.Gravity.CENTER
-        }
-        
-        // Delivery Status
-        val statusText = TextView(this).apply {
-            text = when (order.status) {
-                "Delivered" -> "✓" // Checkmark symbol
-                "Pending" -> "🕐" // Clock symbol
-                else -> order.status
-            }
-            textSize = 12f
-            setTextColor(when (order.status) {
-                "Delivered" -> 0xFF4CAF50.toInt()
-                "Pending" -> 0xFFFF9800.toInt()
-                else -> 0xFF000000.toInt()
-            })
-            setPadding(8, 0, 8, 0)
-            layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-            gravity = android.view.Gravity.CENTER
-        }
-        
-        // Add views to row
-        row.addView(nameText)
-        row.addView(productText)
-        row.addView(totalText)
-        row.addView(paymentText)
-        row.addView(statusText)
-        
-        // Set click listener for row actions
-        row.setOnClickListener {
-            showOrderActionMenu(order, position)
-        }
-        
-        return row
-    }
+    // TableLayout methods removed - using RecyclerView now
 
     private fun updateSummaryVisibility() {
         // Summary handle is always visible, no need to hide it
@@ -336,18 +391,34 @@ class Today : AppCompatActivity() {
             }
         }
         
-        // Extract most common UOM from product strings
-        val uomCounts = customerOrders.mapNotNull { order ->
-            val uomMatch = Regex("^(\\w+)").find(order.product)
-            uomMatch?.groupValues?.get(1)
-        }.groupBy { it }.mapValues { it.value.size }
-        val mainUom = uomCounts.maxByOrNull { it.value }?.key ?: "20L"
+        // Calculate total UOM by adding the actual UOM values (20L + 10L + 20L = 50L)
+        var totalUomValue = 0
+        customerOrders.forEach { order ->
+            // Parse each order's product string to extract UOM values
+            val productLines = if (order.product.contains("\n")) {
+                order.product.split("\n").filter { it.isNotBlank() }
+            } else {
+                order.product.split(", ").filter { it.isNotBlank() }
+            }
+            
+            productLines.forEach { productLine ->
+                // Extract UOM value (20L, 10L, etc.) and quantity
+                val uomMatch = Regex("(\\d+)L").find(productLine)
+                val quantityMatch = Regex("x(\\d+)").find(productLine)
+                
+                val uomValue = uomMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                val quantity = quantityMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                
+                // Add UOM value multiplied by quantity
+                totalUomValue += uomValue * quantity
+            }
+        }
 
         // Update bottom sheet TextViews
         totalQty.text = totalQtyValue.toString()
         alkalineQty.text = alkalineQtyValue.toString()
         mineralQty.text = mineralQtyValue.toString()
-        totalUom.text = mainUom
+        totalUom.text = "${totalUomValue}L"
         pendingsCount.text = pendingCountValue.toString()
         deliveredCount.text = deliveredCountValue.toString()
         totalRevenue.text = String.format("₱%.2f", totalRevenueValue)
@@ -378,6 +449,7 @@ class Today : AppCompatActivity() {
         val options = arrayOf(
             if (order.isPaid) "Mark as Unpaid" else "Mark as Paid",
             if (order.status == "Delivered") "Mark as Pending" else "Mark as Delivered",
+            "Mark as Paid & Delivered",
             "View Details"
         )
 
@@ -387,7 +459,8 @@ class Today : AppCompatActivity() {
                 when (which) {
                     0 -> togglePaymentStatus(order, position)
                     1 -> toggleDeliveryStatus(order, position)
-                    2 -> showOrderDetailsDialog(order, position)
+                    2 -> markAsPaidAndDelivered(order, position)
+                    3 -> showOrderDetailsDialog(order, position)
                 }
             }
             .show()
@@ -399,7 +472,7 @@ class Today : AppCompatActivity() {
         
         // Update in the main list
         val mainIndex = customerOrders.indexOfFirst { 
-            it.name == order.name && it.product == order.product && it.total == order.total 
+            it.name == order.name && it.address == order.address
         }
         if (mainIndex != -1) {
             customerOrders[mainIndex] = updatedOrder
@@ -408,8 +481,8 @@ class Today : AppCompatActivity() {
         // Update in filtered list
         filteredOrders[position] = updatedOrder
         
-        // Refresh the table
-        populateTableLayout()
+        // Update RecyclerView
+        orderAdapter.updateOrders(filteredOrders)
         
         // Update database
         updateOrderInDatabase(updatedOrder)
@@ -421,11 +494,15 @@ class Today : AppCompatActivity() {
 
     private fun toggleDeliveryStatus(order: CustomerOrder, position: Int) {
         val newStatus = if (order.status == "Delivered") "Pending" else "Delivered"
-        val updatedOrder = order.copy(status = newStatus)
+        // Preserve the payment status when changing delivery status
+        val updatedOrder = order.copy(status = newStatus, isPaid = order.isPaid)
+        
+        println("DEBUG: toggleDeliveryStatus - Original: isPaid=${order.isPaid}, status=${order.status}")
+        println("DEBUG: toggleDeliveryStatus - Updated: isPaid=${updatedOrder.isPaid}, status=${updatedOrder.status}")
         
         // Update in the main list
         val mainIndex = customerOrders.indexOfFirst { 
-            it.name == order.name && it.product == order.product && it.total == order.total 
+            it.name == order.name && it.address == order.address
         }
         if (mainIndex != -1) {
             customerOrders[mainIndex] = updatedOrder
@@ -434,32 +511,88 @@ class Today : AppCompatActivity() {
         // Update in filtered list
         filteredOrders[position] = updatedOrder
         
-        // Refresh the table
-        populateTableLayout()
+        // Update RecyclerView
+        orderAdapter.updateOrders(filteredOrders)
         
         // Update database
         updateOrderInDatabase(updatedOrder)
         
-        Toast.makeText(this, "Delivery status updated", Toast.LENGTH_SHORT).show()
+        // Update OrderHistory status
+        val historyUpdated = orderDatabaseHelper.updateOrderHistoryStatus(updatedOrder)
+        if (historyUpdated) {
+            Toast.makeText(this, "Order delivered successfully", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Order delivered, but failed to update OrderHistory", Toast.LENGTH_SHORT).show()
+        }
+        
         updateSummary()
         updateTabLabels()
+    }
+
+
+    private fun markAsPaidAndDelivered(order: CustomerOrder, position: Int) {
+        val updatedOrder = order.copy(isPaid = true, status = "Delivered")
         
-        // Reload current tab to reflect filtering changes
-        loadOrdersForCurrentTab()
+        // Update in the main list
+        val mainIndex = customerOrders.indexOfFirst { 
+            it.name == order.name && it.address == order.address
+        }
+        if (mainIndex != -1) {
+            customerOrders[mainIndex] = updatedOrder
+        }
+        
+        // Update in filtered list
+        filteredOrders[position] = updatedOrder
+        
+        // Update RecyclerView
+        orderAdapter.updateOrders(filteredOrders)
+        
+        // Update database
+        updateOrderInDatabase(updatedOrder)
+        
+        // Update OrderHistory status
+        val historyUpdated = orderDatabaseHelper.updateOrderHistoryStatus(updatedOrder)
+        if (historyUpdated) {
+            Toast.makeText(this, "Order marked as paid and delivered", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Order marked as paid and delivered, but failed to update OrderHistory", Toast.LENGTH_SHORT).show()
+        }
+        
+        updateSummary()
+        updateTabLabels()
     }
 
     private fun updateOrderInDatabase(order: CustomerOrder) {
         try {
-            // Find the original order to update
+            println("DEBUG: updateOrderInDatabase - Updating order: ${order.name} - ${order.address}, isPaid: ${order.isPaid}, status: ${order.status}")
+            
+            // Find the original order to update by name and address (more reliable than product string)
             val originalOrder = customerOrders.find { 
-                it.name == order.name && it.product == order.product && it.total == order.total 
+                it.name == order.name && it.address == order.address
             }
             
             if (originalOrder != null) {
+                println("DEBUG: updateOrderInDatabase - Found original order: isPaid: ${originalOrder.isPaid}, status: ${originalOrder.status}")
+                
+                // Try to update existing order in database
                 val success = orderDatabaseHelper.updateCustomerOrder(order, originalOrder)
                 if (!success) {
-                    Toast.makeText(this, "Failed to update order in database", Toast.LENGTH_SHORT).show()
+                    // If update failed, it might be because the order doesn't exist in database
+                    // Try to add it as a new order instead
+                    println("DEBUG: Update failed, trying to add order to database: ${order.name} - ${order.address}")
+                    val addSuccess = orderDatabaseHelper.addCustomerOrder(order)
+                    if (addSuccess) {
+                        println("DEBUG: Successfully added order to database: ${order.name} - ${order.address}")
+                    } else {
+                        Toast.makeText(this, "Failed to update/add order in database", Toast.LENGTH_SHORT).show()
+                        println("DEBUG: Failed to add order to database: ${order.name} - ${order.address}")
+                    }
+                } else {
+                    println("DEBUG: Successfully updated order: ${order.name} - ${order.address}")
                 }
+            } else {
+                Toast.makeText(this, "Order not found for update", Toast.LENGTH_SHORT).show()
+                println("DEBUG: Order not found for update: ${order.name} - ${order.address}")
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Error updating order: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -482,26 +615,14 @@ class Today : AppCompatActivity() {
         dialog.findViewById<TextView>(R.id.detailName).text = order.name
         dialog.findViewById<TextView>(R.id.detailAddress).text = order.address
         
-        // Format products with bullet points for multi-line display
-        val products = order.product.split(", ").filter { it.isNotBlank() }
-        val productLines = products.mapIndexed { index, product ->
-            val bullet = if (index == 0) "•" else "  •"
-            "$bullet $product"
-        }
-        dialog.findViewById<TextView>(R.id.detailProduct).text = productLines.joinToString("\n")
+        // Populate items list
+        populateItemsList(dialog, order)
         
         dialog.findViewById<TextView>(R.id.detailTotal).text = String.format("₱%.2f", order.total)
         dialog.findViewById<TextView>(R.id.detailPayment).text = if (order.isPaid) "Paid" else "Unpaid"
         dialog.findViewById<TextView>(R.id.detailStatus).text = order.status
 
         // Set up buttons
-        dialog.findViewById<Button>(R.id.editButton).setOnClickListener {
-            dialog.dismiss()
-            showPinDialog("Edit Order") { 
-                showEditOrderDialog(order, position)
-            }
-        }
-
         dialog.findViewById<Button>(R.id.deleteButton).setOnClickListener {
             dialog.dismiss()
             showPinDialog("Delete Order") { 
@@ -516,6 +637,120 @@ class Today : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun populateItemsList(dialog: Dialog, order: CustomerOrder) {
+        val itemsContainer = dialog.findViewById<LinearLayout>(R.id.itemsListContainer)
+        itemsContainer.removeAllViews()
+        
+        println("DEBUG: populateItemsList - Order product: ${order.product}")
+        
+        // Parse the product string to create individual items
+        // Handle both comma-separated and newline-separated formats
+        val productLines = if (order.product.contains("\n")) {
+            order.product.split("\n").filter { it.isNotBlank() }
+        } else {
+            order.product.split(", ").filter { it.isNotBlank() }
+        }
+        
+        println("DEBUG: populateItemsList - Product lines: $productLines")
+        
+        for (productLine in productLines) {
+            val itemView = LayoutInflater.from(this).inflate(R.layout.item_order_detail_item, null)
+            
+            // Parse the product line to extract details
+            val parts = productLine.trim().split(" ")
+            
+            // Extract quantity (format: x2, x3, etc.) - improved regex to handle various formats
+            val quantityMatch = Regex("x(\\d+)").find(productLine)
+            val quantity = quantityMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+            
+            println("DEBUG: populateItemsList - Product line: $productLine, Quantity: $quantity")
+            
+            // Extract water type (A, M, or NR)
+            val waterType = when {
+                productLine.contains(" A ") || productLine.contains(" A") -> "Alkaline"
+                productLine.contains(" M ") || productLine.contains(" M") -> "Mineral"
+                productLine.contains(" NR ") || productLine.contains(" NR") -> "No Refill"
+                else -> "Mineral"
+            }
+            
+            // Extract UOM (20L, 10L, etc.) and determine if it's Slim or Round
+            val size = parts.find { it.endsWith("L") } ?: "20L"
+            val gallonType = when {
+                productLine.contains("Slim") -> "Slim"
+                productLine.contains("Round") -> "Round"
+                else -> "Unknown"
+            }
+            
+            // Build full UOM for pricing calculation
+            val fullUom = when {
+                gallonType != "Unknown" -> "$size $gallonType"
+                else -> "$size Slim" // Default to Slim if not specified
+            }
+            
+            // Build product name with proper Slim/Round indication
+            val productName = when {
+                productLine.contains("Cap Cover") || productLine.contains("Cover") -> {
+                    productLine.replace(" x$quantity", "")
+                }
+                gallonType != "Unknown" -> "${size} ${gallonType} ${waterType}"
+                else -> "${size} ${waterType}"
+            }
+            
+            // Calculate price
+            val price = when {
+                productLine.contains("Cap Cover") || productLine.contains("Cover") -> {
+                    val accessoryPrices = mapOf(
+                        "Small Cap Cover" to 10.0,
+                        "Big Cap Cover" to 25.0,
+                        "Round Cap Cover" to 5.0,
+                        "Non Leak Cover" to 3.0
+                    )
+                    val accessoryName = productLine.replace(" x$quantity", "")
+                    (accessoryPrices[accessoryName] ?: 0.0) * quantity
+                }
+                else -> {
+                    val waterTypeCode = when (waterType) {
+                        "Alkaline" -> "A"
+                        "Mineral" -> "M"
+                        "No Refill" -> "NR"
+                        else -> "M"
+                    }
+                    calculatePrice(waterTypeCode, fullUom, quantity)
+                }
+            }
+            
+            println("DEBUG: populateItemsList - Final product name: $productName, Price: $price")
+            
+            // Set item details
+            itemView.findViewById<TextView>(R.id.itemName).text = productName
+            itemView.findViewById<TextView>(R.id.itemQuantity).text = "Qty: $quantity"
+            itemView.findViewById<TextView>(R.id.itemPrice).text = "₱${String.format("%.2f", price)}"
+            
+            val details = buildString {
+                if (waterType != "No Refill") {
+                    append("Water Type: $waterType")
+                    if (gallonType != "Unknown") {
+                        append(" • Gallon Type: $gallonType")
+                    }
+                    if (size.isNotEmpty()) {
+                        append(" • UOM: $size")
+                    }
+                } else {
+                    append("Type: No Refill")
+                    if (gallonType != "Unknown") {
+                        append(" • Gallon Type: $gallonType")
+                    }
+                    if (size.isNotEmpty()) {
+                        append(" • UOM: $size")
+                    }
+                }
+            }
+            itemView.findViewById<TextView>(R.id.itemDetails).text = details
+            
+            itemsContainer.addView(itemView)
+        }
+    }
+
     private fun showPinDialog(action: String, onSuccess: () -> Unit) {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_pin_access)
@@ -528,7 +763,8 @@ class Today : AppCompatActivity() {
 
         submitButton.setOnClickListener {
             val enteredPin = pinInput.text.toString()
-            if (enteredPin == "0000") {
+            val storedPin = sharedPreferences.getString("admin_pin", "0000") ?: "0000"
+            if (enteredPin == storedPin) {
                 dialog.dismiss()
                 onSuccess()
             } else {
@@ -544,117 +780,6 @@ class Today : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun showEditOrderDialog(order: CustomerOrder, position: Int) {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.dialog_edit_order)
-
-        // Initialize views
-        val nameDisplay = dialog.findViewById<TextView>(R.id.nameDisplay)
-        val addressDisplay = dialog.findViewById<TextView>(R.id.addressDisplay)
-        val quantityInput = dialog.findViewById<EditText>(R.id.quantityInput)
-        val uomSpinner = dialog.findViewById<AutoCompleteTextView>(R.id.uomSpinner)
-        val waterTypeSpinner = dialog.findViewById<AutoCompleteTextView>(R.id.waterTypeSpinner)
-        val paymentStatusGroup = dialog.findViewById<RadioGroup>(R.id.paymentStatusGroup)
-        val paidRadio = dialog.findViewById<RadioButton>(R.id.paidRadio)
-        val unpaidRadio = dialog.findViewById<RadioButton>(R.id.unpaidRadio)
-
-        // Set current values (name and address are read-only)
-        nameDisplay.text = order.name
-        addressDisplay.text = order.address
-
-        // Parse product string to extract quantity, UOM, and water type
-        val productParts = order.product.split(" ")
-        var quantity = 1
-        var uom = "20L"
-        var waterType = "A"
-        
-        for (part in productParts) {
-            if (part.startsWith("x") && part.length > 1) {
-                quantity = part.substring(1).toIntOrNull() ?: 1
-            } else if (part == "A" || part == "M") {
-                waterType = part
-            } else if (part.endsWith("L")) {
-                uom = part
-            }
-        }
-
-        quantityInput.setText(quantity.toString())
-
-        // Set up UOM spinner
-        val uomOptions = arrayOf("20L", "5L", "1L", "500ml")
-        val uomAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, uomOptions)
-        uomSpinner.setAdapter(uomAdapter)
-        uomSpinner.setText(uom, false)
-
-        // Set up water type spinner
-        val waterTypeOptions = arrayOf("A", "M")
-        val waterTypeAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, waterTypeOptions)
-        waterTypeSpinner.setAdapter(waterTypeAdapter)
-        waterTypeSpinner.setText(waterType, false)
-
-        // Set up payment status
-        if (order.isPaid) {
-            paidRadio.isChecked = true
-        } else {
-            unpaidRadio.isChecked = true
-        }
-
-        // Set up buttons
-        dialog.findViewById<Button>(R.id.saveButton).setOnClickListener {
-            try {
-                val newQuantity = quantityInput.text.toString().toIntOrNull()
-                val newUom = uomSpinner.text.toString()
-                val newWaterType = waterTypeSpinner.text.toString()
-                val newIsPaid = paidRadio.isChecked
-
-                if (newQuantity != null && newQuantity > 0) {
-                    val newProduct = "$newUom $newWaterType x$newQuantity"
-                    
-                    val updatedOrder = order.copy(
-                        product = newProduct,
-                        isPaid = newIsPaid
-                    )
-
-                    // Update in main list
-                    val mainIndex = customerOrders.indexOfFirst { 
-                        it.name == order.name && it.product == order.product && it.total == order.total 
-                    }
-                    if (mainIndex != -1) {
-                        customerOrders[mainIndex] = updatedOrder
-                    }
-
-                    // Update in filtered list
-                    filteredOrders[position] = updatedOrder
-                    
-                    // Refresh the table
-                    populateTableLayout()
-
-                    // Update database
-                    updateOrderInDatabase(updatedOrder)
-
-                    Toast.makeText(this, "Order updated successfully", Toast.LENGTH_SHORT).show()
-                    updateSummary()
-                    updateTabLabels()
-                    
-                    // Reload current tab to reflect filtering changes
-                    loadOrdersForCurrentTab()
-                    
-                    dialog.dismiss()
-                } else {
-                    Toast.makeText(this, "Please enter a valid quantity", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error updating order: ${e.message}", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
-            }
-        }
-
-        dialog.findViewById<Button>(R.id.cancelButton).setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
 
     private fun deleteOrder(order: CustomerOrder, position: Int) {
         AlertDialog.Builder(this)
@@ -662,15 +787,20 @@ class Today : AppCompatActivity() {
             .setMessage("Are you sure you want to delete this order?\n\nThis action cannot be undone.")
             .setPositiveButton("Delete") { _, _ ->
                 try {
+                    println("DEBUG: deleteOrder - Attempting to delete order: ${order.name} - ${order.address}")
                     val success = orderDatabaseHelper.deleteCustomerOrder(order)
+                    println("DEBUG: deleteOrder - Database deletion result: $success")
+                    
                     if (success) {
                         // Remove from main list
-                        customerOrders.removeAll { 
-                            it.name == order.name && it.product == order.product && it.total == order.total 
+                        val removedCount = customerOrders.removeAll { 
+                            it.name == order.name && it.address == order.address
                         }
+                        println("DEBUG: deleteOrder - Removed from main list: $removedCount items")
                         
-                        // Update filtered list
-                        loadOrdersForCurrentTab()
+                        // Remove from RecyclerView
+                        orderAdapter.removeOrder(position)
+                        println("DEBUG: deleteOrder - Removed from RecyclerView at position: $position")
                         
                         Toast.makeText(this, "Order deleted successfully", Toast.LENGTH_SHORT).show()
                         updateSummary()
@@ -691,32 +821,97 @@ class Today : AppCompatActivity() {
         val totalRevenue = customerOrders.sumOf { it.total }
         
         // Extract quantity from product string for total quantity calculation
+        // Handle both single items and multiple items (newline-separated)
+        // Count the number of gallons (not just quantities)
         val totalQty = customerOrders.sumOf { order ->
-            val quantityMatch = Regex("x(\\d+)").find(order.product)
-            quantityMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+            val productLines = if (order.product.contains("\n")) {
+                order.product.split("\n").filter { it.isNotBlank() }
+            } else {
+                listOf(order.product)
+            }
+            
+            productLines.sumOf { productLine ->
+                // Count gallons - look for any water type (A, M, NR) or gallon indicators
+                when {
+                    productLine.contains(" A ") || productLine.contains(" A") || 
+                    productLine.contains(" M ") || productLine.contains(" M") ||
+                    productLine.contains(" NR ") || productLine.contains(" NR") ||
+                    productLine.contains("Slim") || productLine.contains("Round") -> {
+                        val quantityMatch = Regex("x(\\d+)").find(productLine)
+                        quantityMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                    }
+                    else -> 0
+                }
+            }
+        }
+        
+        // Calculate Alkaline and Mineral quantities
+        var alkalineQty = 0
+        var mineralQty = 0
+        
+        customerOrders.forEach { order ->
+            val productLines = if (order.product.contains("\n")) {
+                order.product.split("\n").filter { it.isNotBlank() }
+            } else {
+                listOf(order.product)
+            }
+            
+            productLines.forEach { productLine ->
+                val quantityMatch = Regex("x(\\d+)").find(productLine)
+                val quantity = quantityMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                
+                when {
+                    productLine.contains(" A ") || productLine.contains(" A") -> alkalineQty += quantity
+                    productLine.contains(" M ") || productLine.contains(" M") -> mineralQty += quantity
+                    productLine.contains(" NR ") || productLine.contains(" NR") -> {
+                        // No Refill gallons count as Mineral for summary purposes
+                        mineralQty += quantity
+                    }
+                }
+            }
         }
         
         // Update quick summary
         quickTotalQtyText.text = totalQty.toString()
         quickRevenueText.text = String.format("₱%.2f", totalRevenue)
+        
+        // Update panel summary TextViews if they exist (for landscape layout)
+        try {
+            val quickTotalQtyPanel = findViewById<TextView>(R.id.quickTotalQtyPanel)
+            val quickRevenuePanel = findViewById<TextView>(R.id.quickRevenuePanel)
+            
+            quickTotalQtyPanel?.text = totalQty.toString()
+            quickRevenuePanel?.text = String.format("₱%.2f", totalRevenue)
+        } catch (e: Exception) {
+            // Panel views don't exist in current layout, ignore
+        }
+        
+        // Update Alkaline and Mineral summary if the views exist
+        try {
+            val alkalineSummaryText = findViewById<TextView>(R.id.alkalineSummaryText)
+            val mineralSummaryText = findViewById<TextView>(R.id.mineralSummaryText)
+            val pendingCount = findViewById<TextView>(R.id.pendingCount)
+            val deliveredCount = findViewById<TextView>(R.id.deliveredCount)
+            val paidCount = findViewById<TextView>(R.id.paidCount)
+            
+            alkalineSummaryText?.text = alkalineQty.toString()
+            mineralSummaryText?.text = mineralQty.toString()
+            pendingCount?.text = customerOrders.count { it.status == "Pending" }.toString()
+            deliveredCount?.text = customerOrders.count { it.status == "Delivered" }.toString()
+            paidCount?.text = customerOrders.count { it.isPaid }.toString()
+        } catch (e: Exception) {
+            // Views might not exist in all layouts
+            println("DEBUG: Summary views not found: ${e.message}")
+        }
     }
     
-    private fun testTableLayoutVisibility() {
-        println("DEBUG: Testing TableLayout visibility")
-        println("DEBUG: TableLayout child count: ${ordersTable.childCount}")
-        println("DEBUG: Filtered orders size: ${filteredOrders.size}")
-        println("DEBUG: Customer orders size: ${customerOrders.size}")
-        
-        // Force a layout pass
-        ordersTable.requestLayout()
-        ordersTable.invalidate()
-        
-        println("DEBUG: TableLayout test complete")
-    }
+    // TableLayout methods removed - using RecyclerView now
 
     private fun addCustomerOrderToDatabase(order: CustomerOrder) {
         try {
+            println("DEBUG: addCustomerOrderToDatabase - Order total: ${order.total}")
             val success = orderDatabaseHelper.addCustomerOrder(order)
+            println("DEBUG: addCustomerOrderToDatabase - Success: $success")
             
             if (success) {
                 // Update inventory for gallons
@@ -759,6 +954,13 @@ class Today : AppCompatActivity() {
     private fun showAddOrderDialog() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_add_order)
+        
+        // Set dialog window properties for better sizing
+        val window = dialog.window
+        window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.95).toInt(), // 95% of screen width
+            android.view.WindowManager.LayoutParams.WRAP_CONTENT
+        )
 
         // Initialize views
         val productTypeSpinner = dialog.findViewById<Spinner>(R.id.productTypeSpinner)
@@ -767,6 +969,7 @@ class Today : AppCompatActivity() {
         val mineralRadio = dialog.findViewById<RadioButton>(R.id.mineralRadio)
         val alkalineRadio = dialog.findViewById<RadioButton>(R.id.alkalineRadio)
         val noRefillRadio = dialog.findViewById<RadioButton>(R.id.noRefillRadio)
+        val accessoriesRow = dialog.findViewById<LinearLayout>(R.id.accessoriesRow)
         val accessoriesLabel = dialog.findViewById<TextView>(R.id.accessoriesLabel)
         val accessoriesSpinner = dialog.findViewById<Spinner>(R.id.accessoriesSpinner)
         val minusButton = dialog.findViewById<Button>(R.id.minusButton)
@@ -818,24 +1021,35 @@ class Today : AppCompatActivity() {
                     uomSpinner.visibility = View.VISIBLE
                     waterTypeGroup.visibility = View.VISIBLE
                     noRefillRadio.visibility = View.GONE
-                    accessoriesLabel.visibility = View.GONE
-                    accessoriesSpinner.visibility = View.GONE
+                    accessoriesRow.visibility = View.GONE
+                    
+                    // Set UOM options for Water (all options)
+                    val uomOptions = listOf("20L Slim", "10L Slim", "20L Round")
+                    val uomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, uomOptions)
+                    uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    uomSpinner.adapter = uomAdapter
+                    uomSpinner.setSelection(0)
                 }
                 "New Gallon" -> {
                     println("DEBUG: Setting New Gallon fields visible")
                     uomSpinner.visibility = View.VISIBLE
                     waterTypeGroup.visibility = View.VISIBLE
                     noRefillRadio.visibility = View.VISIBLE
-                    accessoriesLabel.visibility = View.GONE
-                    accessoriesSpinner.visibility = View.GONE
+                    accessoriesRow.visibility = View.GONE
+                    
+                    // Set UOM options for New Gallon (only 20L Slim and 20L Round)
+                    val uomOptions = listOf("20L Slim", "20L Round")
+                    val uomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, uomOptions)
+                    uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    uomSpinner.adapter = uomAdapter
+                    uomSpinner.setSelection(0)
                 }
                 "Accessories" -> {
                     println("DEBUG: Setting Accessories fields visible")
                     uomSpinner.visibility = View.GONE
                     waterTypeGroup.visibility = View.GONE
                     noRefillRadio.visibility = View.GONE
-                    accessoriesLabel.visibility = View.VISIBLE
-                    accessoriesSpinner.visibility = View.VISIBLE
+                    accessoriesRow.visibility = View.VISIBLE
                 }
             }
         }
@@ -853,7 +1067,7 @@ class Today : AppCompatActivity() {
                     val uom = uomSpinner.selectedItem.toString()
                     val waterType = if (alkalineRadio.isChecked) "Alkaline" else "Mineral"
                     val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
-                    calculatePrice(waterTypeCode, uom, quantity)
+                    calculatePrice(waterTypeCode, uom, quantity, productType)
                 }
                 "New Gallon" -> {
                     val uom = uomSpinner.selectedItem.toString()
@@ -869,7 +1083,7 @@ class Today : AppCompatActivity() {
                         "No Refill" -> "NR"
                         else -> "M"
                     }
-                    calculatePrice(waterTypeCode, uom, quantity)
+                    calculatePrice(waterTypeCode, uom, quantity, productType)
                 }
                 "Accessories" -> {
                     val accessory = accessoriesSpinner.selectedItem.toString()
@@ -881,11 +1095,11 @@ class Today : AppCompatActivity() {
             // Calculate additional items prices
             for (item in additionalItems) {
                 total += when (item.productType) {
-                "Water" -> {
+                    "Water" -> {
                     val uom = item.view.findViewById<Spinner>(R.id.itemUomSpinner).selectedItem.toString()
                         val waterType = if (item.view.findViewById<RadioButton>(R.id.itemAlkalineRadio).isChecked) "Alkaline" else "Mineral"
                         val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
-                        calculatePrice(waterTypeCode, uom, item.quantity)
+                        calculatePrice(waterTypeCode, uom, item.quantity, item.productType)
                     }
                     "New Gallon" -> {
                         val uom = item.view.findViewById<Spinner>(R.id.itemUomSpinner).selectedItem.toString()
@@ -901,7 +1115,7 @@ class Today : AppCompatActivity() {
                             "No Refill" -> "NR"
                             else -> "M"
                         }
-                        calculatePrice(waterTypeCode, uom, item.quantity)
+                        calculatePrice(waterTypeCode, uom, item.quantity, item.productType)
                     }
                     "Accessories" -> {
                         val accessory = item.view.findViewById<Spinner>(R.id.itemAccessoriesSpinner).selectedItem.toString()
@@ -929,15 +1143,6 @@ class Today : AppCompatActivity() {
         
         // Initialize field visibility based on default product type
         updateFieldVisibility("Water")
-        
-        // Set up UOM dropdown with correct options based on default water type
-        val defaultUomOptions = listOf("20L Slim", "10L Slim", "20L Round") // Mineral options
-        val uomAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, defaultUomOptions)
-        uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        uomSpinner.adapter = uomAdapter
-        
-        // Set default UOM selection
-        uomSpinner.setSelection(0)
 
         // Default quantity counter
         var defaultQuantity = 1
@@ -966,19 +1171,23 @@ class Today : AppCompatActivity() {
                 else -> "Mineral"
             }
             
-            val availableUOMs = when (selectedWaterType) {
-                "Alkaline" -> listOf("20L Slim", "10L Slim")
-                "Mineral" -> uomOptions
-                "No Refill" -> uomOptions
-                else -> uomOptions
+            // Only update UOM options for Water product type
+            val currentProductType = productTypeSpinner.selectedItem.toString()
+            if (currentProductType == "Water") {
+                val availableUOMs = when (selectedWaterType) {
+                    "Alkaline" -> listOf("20L Slim", "10L Slim")
+                    "Mineral" -> listOf("20L Slim", "10L Slim", "20L Round")
+                    "No Refill" -> listOf("20L Slim", "10L Slim", "20L Round")
+                    else -> listOf("20L Slim", "10L Slim", "20L Round")
+                }
+                
+                val uomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs)
+                uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                uomSpinner.adapter = uomAdapter
+                
+                // Set the first available UOM as selected
+                uomSpinner.setSelection(0)
             }
-            
-            val uomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs)
-            uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            uomSpinner.adapter = uomAdapter
-            
-            // Set the first available UOM as selected
-            uomSpinner.setSelection(0)
             
             updateTotalPrice()
         }
@@ -1006,13 +1215,6 @@ class Today : AppCompatActivity() {
             itemProductTypeSpinner.adapter = itemProductTypeAdapter
             itemProductTypeSpinner.setSelection(0)
             
-            // Set up UOM dropdown with correct options based on default water type
-            val defaultUomOptions = listOf("20L Slim", "10L Slim", "20L Round") // Mineral options
-            val itemUomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, defaultUomOptions)
-            itemUomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            itemUomSpinner.adapter = itemUomAdapter
-            itemUomSpinner.setSelection(0)
-            
             // Set up accessories dropdown
             val itemAccessoriesAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, accessories)
             itemAccessoriesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -1030,12 +1232,26 @@ class Today : AppCompatActivity() {
                         itemWaterTypeGroup.visibility = View.VISIBLE
                         itemNoRefillRadio.visibility = View.GONE
                         itemAccessoriesRow.visibility = View.GONE
+                        
+                        // Set UOM options for Water (all options)
+                        val uomOptions = listOf("20L Slim", "10L Slim", "20L Round")
+                        val uomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, uomOptions)
+                        uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        itemUomSpinner.adapter = uomAdapter
+                        itemUomSpinner.setSelection(0)
                     }
                     "New Gallon" -> {
                         itemUomSpinner.visibility = View.VISIBLE
                         itemWaterTypeGroup.visibility = View.VISIBLE
                         itemNoRefillRadio.visibility = View.VISIBLE
                         itemAccessoriesRow.visibility = View.GONE
+                        
+                        // Set UOM options for New Gallon (only 20L Slim and 20L Round)
+                        val uomOptions = listOf("20L Slim", "20L Round")
+                        val uomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, uomOptions)
+                        uomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        itemUomSpinner.adapter = uomAdapter
+                        itemUomSpinner.setSelection(0)
                     }
                     "Accessories" -> {
                         itemUomSpinner.visibility = View.GONE
@@ -1095,19 +1311,23 @@ class Today : AppCompatActivity() {
                     else -> "Mineral"
                 }
                 
-                val availableUOMs = when (selectedWaterType) {
-                    "Alkaline" -> listOf("20L Slim", "10L Slim")
-                    "Mineral" -> uomOptions
-                    "No Refill" -> uomOptions
-                    else -> uomOptions
+                // Only update UOM options for Water product type
+                val currentProductType = itemProductTypeSpinner.selectedItem.toString()
+                if (currentProductType == "Water") {
+                    val availableUOMs = when (selectedWaterType) {
+                        "Alkaline" -> listOf("20L Slim", "10L Slim")
+                        "Mineral" -> listOf("20L Slim", "10L Slim", "20L Round")
+                        "No Refill" -> listOf("20L Slim", "10L Slim", "20L Round")
+                        else -> listOf("20L Slim", "10L Slim", "20L Round")
+                    }
+                    
+                    val itemUomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs)
+                    itemUomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    itemUomSpinner.adapter = itemUomAdapter
+                    
+                    // Set the first available UOM as selected
+                    itemUomSpinner.setSelection(0)
                 }
-                
-                val itemUomAdapter = ArrayAdapter(this@Today, android.R.layout.simple_spinner_item, availableUOMs)
-                itemUomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                itemUomSpinner.adapter = itemUomAdapter
-                
-                // Set the first available UOM as selected
-                itemUomSpinner.setSelection(0)
                 
                 updateTotalPrice()
             }
@@ -1163,7 +1383,7 @@ class Today : AppCompatActivity() {
                             val uom = uomSpinner.selectedItem.toString()
                             val waterType = if (alkalineRadio.isChecked) "Alkaline" else "Mineral"
                             val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
-                            val price = calculatePrice(waterTypeCode, uom, quantity)
+                            val price = calculatePrice(waterTypeCode, uom, quantity, productType)
                             totalPrice += price
                             "${uom} ${waterTypeCode} x${quantity}"
                         }
@@ -1181,7 +1401,7 @@ class Today : AppCompatActivity() {
                                 "No Refill" -> "NR"
                                 else -> "M"
                             }
-                            val price = calculatePrice(waterTypeCode, uom, quantity)
+                            val price = calculatePrice(waterTypeCode, uom, quantity, productType)
                             totalPrice += price
                             "${uom} ${waterTypeCode} x${quantity}"
                         }
@@ -1202,7 +1422,7 @@ class Today : AppCompatActivity() {
                                 val uom = item.view.findViewById<Spinner>(R.id.itemUomSpinner).selectedItem.toString()
                                 val waterType = if (item.view.findViewById<RadioButton>(R.id.itemAlkalineRadio).isChecked) "Alkaline" else "Mineral"
                                 val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
-                                val price = calculatePrice(waterTypeCode, uom, item.quantity)
+                                val price = calculatePrice(waterTypeCode, uom, item.quantity, item.productType)
                                 totalPrice += price
                                 "${uom} ${waterTypeCode} x${item.quantity}"
                             }
@@ -1220,7 +1440,7 @@ class Today : AppCompatActivity() {
                                     "No Refill" -> "NR"
                                     else -> "M"
                                 }
-                                val price = calculatePrice(waterTypeCode, uom, item.quantity)
+                                val price = calculatePrice(waterTypeCode, uom, item.quantity, item.productType)
                                 totalPrice += price
                                 "${uom} ${waterTypeCode} x${item.quantity}"
                             }
@@ -1237,13 +1457,18 @@ class Today : AppCompatActivity() {
                     
                     val product = productStrings.joinToString("\n") // Use newline instead of comma for better display
                     
+                    println("DEBUG: Add Order - Final totalPrice: $totalPrice")
+                    println("DEBUG: Add Order - Product: $product")
+                    
                     val order = CustomerOrder(
                         name = name,
                         address = address,
                         product = product,
                         total = totalPrice,
                         isPaid = isPaid,
-                        status = "Pending" // New orders start as pending
+                        status = "Pending", // New orders start as pending
+                        isFromCustomerInterface = false, // Admin-created orders
+                        userId = "" // Admin-created orders don't have userId
                     )
                     addCustomerOrderToDatabase(order)
                     dialog.dismiss()
@@ -1263,27 +1488,54 @@ class Today : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun calculatePrice(waterType: String, uom: String, quantity: Int): Double {
-        return when (waterType) {
-            "A" -> {
-                val fullWaterType = "Alkaline"
-                (prices[fullWaterType]?.get(uom) ?: 0.0) * quantity
+    private fun calculatePrice(waterType: String, uom: String, quantity: Int, productType: String = "Water"): Double {
+        val result = when (productType) {
+            "Water" -> {
+                // Water pricing based on UOM and water type
+                when (waterType) {
+                    "A" -> { // Alkaline
+                        val price = when (uom) {
+                            "20L Slim" -> 50.0
+                            "20L Round" -> 50.0
+                            "10L Slim" -> 25.0
+                            else -> 0.0
+                        }
+                        println("DEBUG: calculatePrice - Water Alkaline: $uom = $price, quantity = $quantity")
+                        price * quantity
+                    }
+                    "M" -> { // Mineral
+                        val price = when (uom) {
+                            "20L Slim" -> 30.0
+                            "20L Round" -> 30.0
+                            "10L Slim" -> 15.0
+                            else -> 0.0
+                        }
+                        println("DEBUG: calculatePrice - Water Mineral: $uom = $price, quantity = $quantity")
+                        price * quantity
+                    }
+                    else -> {
+                        println("DEBUG: calculatePrice - Unknown water type for Water: $waterType")
+                        0.0
+                    }
+                }
             }
-            "M" -> {
-                val fullWaterType = "Mineral"
-                (prices[fullWaterType]?.get(uom) ?: 0.0) * quantity
+            "New Gallon" -> {
+                // New Gallon pricing - always ₱200 regardless of water type
+                val price = when (uom) {
+                    "20L Slim" -> 200.0
+                    "20L Round" -> 200.0
+                    else -> 0.0
+                }
+                println("DEBUG: calculatePrice - New Gallon: $uom = $price, quantity = $quantity")
+                price * quantity
             }
-            "NR" -> {
-                // No refill - just the gallon price (accessory price)
-                val gallonPrices = mapOf(
-                    "20L Slim" to 200.0,  // Slim gallon
-                    "10L Slim" to 200.0,  // Slim gallon
-                    "20L Round" to 200.0  // Round gallon
-                )
-                (gallonPrices[uom] ?: 0.0) * quantity
+            else -> {
+                println("DEBUG: calculatePrice - Unknown product type: $productType")
+                0.0
             }
-            else -> 0.0
         }
+        println("DEBUG: calculatePrice - Final result: $result")
+        return result
     }
 
     private fun calculateAccessoryPrice(accessory: String, quantity: Int): Double {
@@ -1293,6 +1545,10 @@ class Today : AppCompatActivity() {
             "Round Cap Cover" to 5.0,
             "Non Leak Cover" to 3.0
         )
-        return (accessoryPrices[accessory] ?: 0.0) * quantity
+        val price = accessoryPrices[accessory] ?: 0.0
+        val total = price * quantity
+        println("DEBUG: calculateAccessoryPrice - Accessory: '$accessory', Price: $price, Quantity: $quantity, Total: $total")
+        println("DEBUG: calculateAccessoryPrice - Available accessories: ${accessoryPrices.keys}")
+        return total
     }
 }

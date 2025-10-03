@@ -2,6 +2,7 @@ package com.adamson.fhydroscan
 
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -54,10 +55,16 @@ class Sales : AppCompatActivity() {
     private val dummyData = generateDummyData()
     private var selectedDate = Calendar.getInstance()
     private var selectedPeriodType = "Week"
+    private var selectedFromDate: Calendar = Calendar.getInstance()
+    private var selectedToDate: Calendar = Calendar.getInstance()
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sales)
+
+        // Initialize shared preferences
+        sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
 
         // Initialize views
         initializeViews()
@@ -354,7 +361,7 @@ class Sales : AppCompatActivity() {
                 data.add(
                     SalesData(
                         date = calendar.clone() as Calendar,
-                        uom = listOf("20L", "10L", "7L", "6L")[random.nextInt(4)],
+                        uom = listOf("20L", "10L")[random.nextInt(2)],
                         quantity = random.nextInt(10) + 1,
                         revenue = (random.nextInt(1000) + 500).toDouble(),
                         waterType = waterTypes[random.nextInt(2)],
@@ -652,7 +659,7 @@ class Sales : AppCompatActivity() {
         
         excelOption.setOnClickListener {
             dialog.dismiss()
-            exportToCSV()
+            showDateRangeDialog()
         }
         
         cancelButton.setOnClickListener {
@@ -736,6 +743,77 @@ class Sales : AppCompatActivity() {
         }
     }
 
+    private fun showDateRangeDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_date_range_export, null)
+        
+        val fromDateButton = dialogView.findViewById<Button>(R.id.fromDateButton)
+        val toDateButton = dialogView.findViewById<Button>(R.id.toDateButton)
+        val selectedDateRangeText = dialogView.findViewById<TextView>(R.id.selectedDateRangeText)
+        val exportButton = dialogView.findViewById<Button>(R.id.exportButton)
+        val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+        
+        // Set initial dates (last 30 days)
+        selectedToDate = Calendar.getInstance()
+        selectedFromDate = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -30)
+        }
+        
+        updateDateRangeText(selectedDateRangeText)
+        
+        fromDateButton.setOnClickListener {
+            showDatePicker(selectedFromDate) { calendar ->
+                selectedFromDate = calendar
+                updateDateRangeText(selectedDateRangeText)
+            }
+        }
+        
+        toDateButton.setOnClickListener {
+            showDatePicker(selectedToDate) { calendar ->
+                selectedToDate = calendar
+                updateDateRangeText(selectedDateRangeText)
+            }
+        }
+        
+        exportButton.setOnClickListener {
+            dialog.dismiss()
+            exportToCSV()
+        }
+        
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialog.show()
+    }
+
+    private fun updateDateRangeText(textView: TextView) {
+        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        val fromDateStr = dateFormat.format(selectedFromDate.time)
+        val toDateStr = dateFormat.format(selectedToDate.time)
+        textView.text = "Exporting from $fromDateStr to $toDateStr"
+        textView.visibility = View.VISIBLE
+    }
+
+    private fun showDatePicker(initialDate: Calendar, onDateSelected: (Calendar) -> Unit) {
+        val datePickerDialog = DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                val selectedDate = Calendar.getInstance().apply {
+                    set(year, month, dayOfMonth)
+                }
+                onDateSelected(selectedDate)
+            },
+            initialDate.get(Calendar.YEAR),
+            initialDate.get(Calendar.MONTH),
+            initialDate.get(Calendar.DAY_OF_MONTH)
+        )
+        datePickerDialog.show()
+    }
+
     private fun exportToCSV() {
         try {
             val fileName = "Sales_Report_${System.currentTimeMillis()}.csv"
@@ -743,15 +821,37 @@ class Sales : AppCompatActivity() {
             
             val csvContent = StringBuilder()
             
-            // Add header row
-            csvContent.appendLine("Date,Customer,Water Type,Quantity,UOM,Revenue")
+            // Get current user ID
+            val currentUserId = sharedPreferences.getString("current_user_id", "") ?: ""
+            if (currentUserId.isEmpty()) {
+                showToast("User not logged in")
+                return
+            }
             
-            // Add data rows
-            val filteredData = filterDataByDateRange(selectedDate, getCurrentReportType())
+            // Format dates for filtering
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val fromDateStr = dateFormat.format(selectedFromDate.time)
+            val toDateStr = dateFormat.format(selectedToDate.time)
             
-            for (sale in filteredData) {
-                val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(sale.date.time)
-                csvContent.appendLine("$dateStr,${sale.customerName},${sale.waterType},${sale.quantity},${sale.uom},${sale.revenue}")
+            // Filter data by date range
+            val filteredData = dummyData.filter { sale ->
+                val saleDateStr = dateFormat.format(sale.date.time)
+                saleDateStr >= fromDateStr && saleDateStr <= toDateStr
+            }.sortedBy { it.date }
+            
+            if (filteredData.isEmpty()) {
+                showToast("No sales data found in selected date range")
+                return
+            }
+            
+            // Group data by date
+            val dataByDate = filteredData.groupBy { 
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(it.date.time)
+            }
+            
+            // Export each date as a separate table
+            for ((date, sales) in dataByDate.toSortedMap()) {
+                exportDateToCsv(csvContent, date, sales)
             }
             
             // Write to file
@@ -760,11 +860,64 @@ class Sales : AppCompatActivity() {
             // Share the file
             shareFile(file, "text/csv")
             
-            Toast.makeText(this, "CSV file exported successfully!", Toast.LENGTH_SHORT).show()
+            showToast("CSV file exported successfully!")
             
         } catch (e: Exception) {
-            Toast.makeText(this, "Error creating CSV file: ${e.message}", Toast.LENGTH_LONG).show()
+            showToast("Error creating CSV file: ${e.message}")
         }
+    }
+
+    private fun exportDateToCsv(csvContent: StringBuilder, date: String, sales: List<SalesData>) {
+        // Format display date as MM/DD/YYYY (matching Orders format)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val displayDate = try {
+            val parsedDate = dateFormat.parse(date)
+            displayFormat.format(parsedDate!!)
+        } catch (e: Exception) {
+            date
+        }
+        
+        // Add DATE header (merged columns - represented as single cell)
+        csvContent.appendLine("DATE:,$displayDate")
+        csvContent.appendLine() // Empty line
+        
+        // Add column headers
+        csvContent.appendLine("CUSTOMER,PRODUCT,UOM,QTY,TOTAL")
+        
+        // Process sales data
+        var totalRevenue = 0.0
+        var totalUom = 0
+        
+        for (sale in sales) {
+            // Map product names according to specifications (same as Orders)
+            val productName = mapProductName(sale.waterType, sale.uom)
+            
+            // Determine UOM based on product type
+            val uom = determineUom(productName, sale.uom)
+            
+            // Calculate correct price using database pricing
+            val unitPrice = calculateCorrectPrice(sale.waterType, sale.uom)
+            val totalPrice = unitPrice * sale.quantity
+            
+            // Calculate UOM value for total calculation (sum UOM values, ignore quantity)
+            val uomValue = if (uom == "N/A") 0 else sale.uom.replace("L", "").toIntOrNull() ?: 0
+            totalUom += uomValue
+            
+            // Add sales data row
+            csvContent.appendLine("${sale.customerName},$productName,$uom,${sale.quantity},${String.format("%.2f", totalPrice)}")
+            totalRevenue += totalPrice
+        }
+        
+        csvContent.appendLine() // Empty line
+        
+        // Add Total UOM (merged columns) - ABOVE Total Revenue as requested
+        csvContent.appendLine("Total UOM:,$totalUom")
+        
+        // Add Total Revenue (merged columns)
+        csvContent.appendLine("Total Revenue:,${String.format("%.2f", totalRevenue)}")
+        
+        csvContent.appendLine() // Empty line between dates
     }
 
     private fun getCurrentReportType(): ReportType {
@@ -791,6 +944,49 @@ class Sales : AppCompatActivity() {
         }
         
         startActivity(Intent.createChooser(intent, "Share Report"))
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun mapProductName(waterType: String, uom: String): String {
+        return when {
+            // Water types
+            waterType == "Mineral" -> "Mineral"
+            waterType == "Alkaline" -> "Alkaline"
+            
+            // Gallon types (based on UOM and water type)
+            uom == "20L" && waterType == "Mineral" -> "Round Gallon (New)"
+            uom == "20L" && waterType == "Alkaline" -> "Round Gallon (New)"
+            uom == "10L" && waterType == "Mineral" -> "Slim Gallon (New)"
+            uom == "10L" && waterType == "Alkaline" -> "Slim Gallon (New)"
+            
+            // Fallback to water type if no specific match
+            else -> waterType
+        }
+    }
+    
+    private fun determineUom(productName: String, originalUom: String): String {
+        return when (productName) {
+            "Mineral", "Alkaline" -> originalUom // 20L or 10L
+            "Round Gallon (New)", "Slim Gallon (New)" -> "20L"
+            else -> originalUom
+        }
+    }
+    
+    private fun calculateCorrectPrice(waterType: String, uom: String): Double {
+        val prices = mapOf(
+            "Alkaline" to mapOf(
+                "20L" to 50.0,
+                "10L" to 25.0
+            ),
+            "Mineral" to mapOf(
+                "20L" to 30.0,
+                "10L" to 15.0
+            )
+        )
+        return prices[waterType]?.get(uom) ?: 0.0
     }
 
     enum class ReportType {

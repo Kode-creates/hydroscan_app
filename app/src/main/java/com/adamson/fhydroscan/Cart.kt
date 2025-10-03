@@ -21,7 +21,6 @@ import com.adamson.fhydroscan.data.Order
 import com.adamson.fhydroscan.data.OrderItem
 import com.adamson.fhydroscan.data.OrderStatus
 import com.adamson.fhydroscan.database.CartDatabaseHelper
-import com.adamson.fhydroscan.database.HydroCoinDatabaseHelper
 import com.adamson.fhydroscan.database.OrderDatabaseHelper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.util.Calendar
@@ -33,13 +32,10 @@ class Cart : AppCompatActivity() {
     private var deliveryDate = ""
     private lateinit var cartDatabaseHelper: CartDatabaseHelper
     private lateinit var orderDatabaseHelper: OrderDatabaseHelper
-    private lateinit var hydroCoinDatabaseHelper: HydroCoinDatabaseHelper
     private lateinit var cartAdapter: CartAdapter
     private lateinit var cartRecyclerView: RecyclerView
     private lateinit var emptyCartText: TextView
     private var currentUserId: String = ""
-    private var hydroCoinBalance: Int = 0
-    private var isUsingHydroCoins: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +45,6 @@ class Cart : AppCompatActivity() {
             // Initialize database and get current user
             cartDatabaseHelper = CartDatabaseHelper(this)
             orderDatabaseHelper = OrderDatabaseHelper(this)
-            hydroCoinDatabaseHelper = HydroCoinDatabaseHelper(this)
             getCurrentUserId()
             
             // Setup UI components
@@ -115,8 +110,6 @@ class Cart : AppCompatActivity() {
                 dialog.dismiss()
             }
 
-            // Setup hydrocoin switch
-            setupDialogHydroCoinSwitch(dialog)
 
             // Load current data
             loadDialogData(dialog)
@@ -125,20 +118,9 @@ class Cart : AppCompatActivity() {
         }
     }
 
-    private fun setupDialogHydroCoinSwitch(dialog: Dialog) {
-        val hydroCoinSwitch = dialog.findViewById<Switch>(R.id.useCoinsSwitch)
-        hydroCoinSwitch.setOnCheckedChangeListener { _, isChecked ->
-            isUsingHydroCoins = isChecked
-            updateDialogTotalAmount(dialog)
-        }
-    }
 
     private fun loadDialogData(dialog: Dialog) {
         try {
-            // Load hydrocoin balance
-            hydroCoinBalance = hydroCoinDatabaseHelper.getHydroCoinBalance(currentUserId)
-            dialog.findViewById<TextView>(R.id.hydroCoinBalanceText).text = "Balance: $hydroCoinBalance coins"
-
             // Calculate and display total amount
             updateDialogTotalAmount(dialog)
         } catch (e: Exception) {
@@ -152,13 +134,7 @@ class Cart : AppCompatActivity() {
             val total = cartItems.sumOf { it.price * it.quantity }
             
             val totalAmountText = dialog.findViewById<TextView>(R.id.totalAmount)
-            if (isUsingHydroCoins && hydroCoinBalance > 0) {
-                val discountAmount = minOf(hydroCoinBalance.toDouble(), total)
-                val finalTotal = total - discountAmount
-                totalAmountText.text = "₱${String.format("%.2f", finalTotal)} (${hydroCoinBalance.toInt()} coins used)"
-            } else {
-                totalAmountText.text = "₱${String.format("%.2f", total)}"
-            }
+            totalAmountText.text = "₱${String.format("%.2f", total)}"
         }
     }
 
@@ -360,13 +336,8 @@ class Cart : AppCompatActivity() {
             val totalAmount = cartItems.sumOf { it.price * it.quantity }
             val totalItems = cartItems.sumOf { it.quantity }
             
-            // Calculate final amount after hydrocoin discount
-            val finalAmount = if (isUsingHydroCoins && hydroCoinBalance > 0) {
-                val discountAmount = minOf(hydroCoinBalance.toDouble(), totalAmount)
-                totalAmount - discountAmount
-            } else {
-                totalAmount
-            }
+            // Use total amount as final amount
+            val finalAmount = totalAmount
             
             val orderItems = cartItems.map { cartItem ->
                 OrderItem(
@@ -403,12 +374,6 @@ class Cart : AppCompatActivity() {
             if (orderDatabaseHelper.addOrder(order)) {
                 Log.d(TAG, "Order saved successfully: $orderNumber")
                 
-                // Spend hydrocoins if used
-                if (isUsingHydroCoins && hydroCoinBalance > 0) {
-                    val coinsToSpend = minOf(hydroCoinBalance, totalAmount.toInt())
-                    hydroCoinDatabaseHelper.spendHydroCoins(currentUserId, coinsToSpend)
-                    Log.d(TAG, "Spent $coinsToSpend hydrocoins")
-                }
                 
                 AlertDialog.Builder(this)
                     .setTitle("Order Submitted!")
@@ -444,7 +409,7 @@ class Cart : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh cart and hydrocoin balance when activity resumes
+        // Refresh cart when activity resumes
         loadCartItems()
     }
 

@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#fffafa"
-    android:fillViewport="true"
     tools:context=".Sales">
+
+<ScrollView
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:background="#fffafa"
+    android:fillViewport="true"
+    android:scrollbars="vertical"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toTopOf="@id/bottomNav"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent">
 
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
@@ -75,7 +86,7 @@
         android:id="@+id/statisticsCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         app:cardCornerRadius="8dp"
@@ -111,7 +122,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:background="#F8F9FA">
 
                     <TextView
@@ -138,7 +149,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="6dp">
 
                     <TextView
                         android:layout_width="0dp"
@@ -164,7 +175,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:background="#F8F9FA">
 
                     <TextView
@@ -191,7 +202,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="6dp">
 
                     <TextView
                         android:layout_width="0dp"
@@ -217,7 +228,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:background="#F8F9FA">
 
                     <TextView
@@ -250,7 +261,7 @@
         android:id="@+id/salesSpikeCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         app:cardCornerRadius="8dp"
@@ -282,7 +293,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="8dp"
+                android:padding="6dp"
                 android:background="#F8F9FA">
 
                 <TextView
@@ -309,7 +320,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="8dp">
+                android:padding="6dp">
 
                 <TextView
                     android:layout_width="0dp"
@@ -335,7 +346,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="8dp"
+                android:padding="6dp"
                 android:background="#F8F9FA">
 
                 <TextView
@@ -366,7 +377,7 @@
         android:id="@+id/topCustomerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         app:cardCornerRadius="8dp"
@@ -402,7 +413,7 @@
                 android:textColor="#1b5692"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:padding="16dp"
+                android:padding="8dp"
                 android:gravity="center" />
 
         </LinearLayout>
@@ -410,39 +421,39 @@
     </androidx.cardview.widget.CardView>
 
     <!-- Export Button -->
-
-    <!-- Bottom Navigation -->
-
     <Button
         android:id="@+id/exportButton"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
         android:backgroundTint="#1b5692"
         android:drawableStart="@android:drawable/ic_menu_share"
-        android:drawablePadding="8dp"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
+        android:drawablePadding="6dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         android:text="Export"
         android:textColor="#FFFFFF"
-        android:textSize="10sp"
+        android:textSize="11sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/topCustomerCard" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNav"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#1b5692"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:itemIconTint="#fffafa"
-        app:itemTextColor="#fffafa"
-        app:menu="@menu/bottom_navmenu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>
+
+<!-- Bottom Navigation - Fixed at bottom -->
+<com.google.android.material.bottomnavigation.BottomNavigationView
+    android:id="@+id/bottomNav"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#1b5692"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:itemIconTint="#fffafa"
+    app:itemTextColor="#fffafa"
+    app:menu="@menu/bottom_navmenu" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

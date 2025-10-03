@@ -305,16 +305,23 @@ class ScanC : AppCompatActivity() {
     }
 
     private fun getProductNameFromQR(uom: String, waterType: String): String {
+        val waterTypeCode = if (waterType == "Alkaline") "A" else "M"
         return when {
             uom.contains("20L", ignoreCase = true) -> {
-                if (waterType == "Alkaline") "Refill Alkaline 20L" else "Refill Mineral 20L"
+                if (uom.contains("Slim", ignoreCase = true)) {
+                    "20L Slim $waterTypeCode x1"
+                } else if (uom.contains("Round", ignoreCase = true)) {
+                    "20L Round $waterTypeCode x1"
+                } else {
+                    "20L Slim $waterTypeCode x1" // Default to Slim
+                }
             }
             uom.contains("10L", ignoreCase = true) -> {
-                if (waterType == "Alkaline") "Refill Alkaline 10L" else "Refill Mineral 10L"
+                "10L Slim $waterTypeCode x1"
             }
             else -> {
-                // Default to 20L based on water type
-                if (waterType == "Alkaline") "Refill Alkaline 20L" else "Refill Mineral 20L"
+                // Default to 20L Slim based on water type
+                "20L Slim $waterTypeCode x1"
             }
         }
     }

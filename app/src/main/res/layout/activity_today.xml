@@ -77,79 +77,16 @@
 
             </com.google.android.material.tabs.TabLayout>
 
-            <!-- Table Header -->
-            <LinearLayout
-                android:id="@+id/tableHeader"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="8dp"
-                android:layout_marginHorizontal="14dp"
-                android:layout_marginTop="8dp"
-                android:background="#1b5692">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.5"
-                    android:textSize="10sp"
-                    android:text="@string/name"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.5"
-                    android:textSize="10sp"
-                    android:text="Product"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="10sp"
-                    android:text="@string/total"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="10sp"
-                    android:text="Payment"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="10sp"
-                    android:text="@string/status"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold"/>
-            </LinearLayout>
-
-            <!-- Orders Table -->
-            <ScrollView
+            <!-- Orders RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/ordersRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="14dp"
                 android:background="#f5f5f5"
-                android:minHeight="200dp">
-
-                <TableLayout
-                    android:id="@+id/ordersTable"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:stretchColumns="*"
-                    android:shrinkColumns="*" />
-
-            </ScrollView>
+                android:padding="8dp"
+                android:clipToPadding="false"
+                android:minHeight="200dp" />
 
         </LinearLayout>
     </ScrollView>

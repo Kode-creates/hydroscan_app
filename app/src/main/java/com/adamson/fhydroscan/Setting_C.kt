@@ -13,15 +13,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.adamson.fhydroscan.database.DatabaseHelper
-import com.adamson.fhydroscan.database.HydroCoinDatabaseHelper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class Setting_C : AppCompatActivity() {
     private val TAG = "SettingCActivity"
     private lateinit var userDatabaseHelper: DatabaseHelper
-    private lateinit var hydroCoinDatabaseHelper: HydroCoinDatabaseHelper
     private lateinit var customerText: TextView
-    private lateinit var hydroCoinBalanceText: TextView
     private var currentUserId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +28,6 @@ class Setting_C : AppCompatActivity() {
             
             // Initialize database helpers
             userDatabaseHelper = DatabaseHelper(this)
-            hydroCoinDatabaseHelper = HydroCoinDatabaseHelper(this)
             
             // Get current user
             getCurrentUserId()
@@ -53,7 +49,6 @@ class Setting_C : AppCompatActivity() {
 
     private fun initializeViews() {
         customerText = findViewById(R.id.customerText)
-        hydroCoinBalanceText = findViewById(R.id.hydroCoinBalanceText)
     }
 
     private fun getCurrentUserId() {
@@ -80,17 +75,12 @@ class Setting_C : AppCompatActivity() {
                     customerText.text = "Customer"
                 }
                 
-                // Get hydrocoin balance
-                val hydroCoinBalance = hydroCoinDatabaseHelper.getHydroCoinBalance(currentUserId)
-                hydroCoinBalanceText.text = hydroCoinBalance.toString()
             } else {
                 customerText.text = "Customer"
-                hydroCoinBalanceText.text = "0"
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error loading user data: ${e.message}", e)
             customerText.text = "Customer"
-            hydroCoinBalanceText.text = "0"
         }
     }
 
@@ -317,6 +307,7 @@ class Setting_C : AppCompatActivity() {
         }
     }
 }
+
 
 
 
