@@ -3,6 +3,8 @@ package com.adamson.fhydroscan
 import android.content.Intent
 import android.os.Bundle
 import android.widget.LinearLayout
+import android.widget.Switch
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -26,6 +28,20 @@ class Settings : AppCompatActivity() {
         productsButton.setOnClickListener {
             val intent = Intent(this, Products::class.java)
             startActivity(intent)
+        }
+
+        // Set up notification switch
+        val notificationSwitch = findViewById<Switch>(R.id.notificationSwitch)
+        notificationSwitch.isChecked = ServiceManager.isServiceEnabled(this)
+        
+        notificationSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                ServiceManager.startOrderNotificationService(this)
+                Toast.makeText(this, "Background notifications enabled", Toast.LENGTH_SHORT).show()
+            } else {
+                ServiceManager.stopOrderNotificationService(this)
+                Toast.makeText(this, "Background notifications disabled", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Set up logout button

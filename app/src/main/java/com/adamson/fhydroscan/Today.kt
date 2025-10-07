@@ -2,6 +2,9 @@ package com.adamson.fhydroscan
 
 import android.app.Dialog
 import android.content.SharedPreferences
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +33,7 @@ class Today : AppCompatActivity() {
     private lateinit var tabLayout: TabLayout
     private lateinit var sharedPreferences: SharedPreferences
     private var currentTab = 0 // 0: All Orders, 1: Pendings, 2: Delivered
+    private var previousOrderCount = 0
 
     // Define UOM options and prices
     private val uomOptions = listOf("20L Slim", "10L Slim", "20L Round")
@@ -54,6 +58,9 @@ class Today : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         try {
             setContentView(R.layout.activity_today)
+            
+            // Start background notification service
+            ServiceManager.startOrderNotificationService(this)
 
             // Enable the home button in the action bar
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -195,6 +202,12 @@ class Today : AppCompatActivity() {
         // Refresh today's orders when activity resumes
         loadTodaysOrders()
     }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Stop background notification service when Today page is closed
+        ServiceManager.stopOrderNotificationService(this)
+    }
 
     private fun loadTodaysOrders() {
         try {
@@ -214,6 +227,17 @@ class Today : AppCompatActivity() {
             
             // Load orders for current tab
             loadOrdersForCurrentTab()
+            
+            // Check for new orders and play notification sound (only after initial load)
+            if (previousOrderCount == 0) {
+                // First load - just set the count for customer interface orders without playing sound
+                val customerInterfaceOrders = customerOrders.filter { it.isFromCustomerInterface }
+                previousOrderCount = customerInterfaceOrders.size
+                println("DEBUG: Initial customer interface order count set to ${previousOrderCount}")
+            } else {
+                // Subsequent loads - check for new customer interface orders
+                checkForNewOrders()
+            }
         } catch (e: Exception) {
             Toast.makeText(this, "Error loading today's orders: ${e.message}", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
@@ -370,15 +394,18 @@ class Today : AppCompatActivity() {
         pendingsCount: TextView, deliveredCount: TextView, totalRevenue: TextView,
         paidCount: TextView, unpaidCount: TextView, collectedRevenue: TextView
     ) {
-        val totalRevenueValue = customerOrders.sumOf { it.total }
-        val deliveredCountValue = customerOrders.count { it.status == "Delivered" }
-        val pendingCountValue = customerOrders.count { it.status == "Pending" }
-        val paidCountValue = customerOrders.count { it.isPaid }
-        val unpaidCountValue = customerOrders.count { !it.isPaid }
-        val collectedRevenueValue = customerOrders.filter { it.isPaid }.sumOf { it.total }
+        // Filter out cancelled orders for all calculations
+        val activeOrders = customerOrders.filter { it.status != "Cancelled" }
+        
+        val totalRevenueValue = activeOrders.sumOf { it.total }
+        val deliveredCountValue = activeOrders.count { it.status == "Delivered" }
+        val pendingCountValue = activeOrders.count { it.status == "Pending" }
+        val paidCountValue = activeOrders.count { it.isPaid }
+        val unpaidCountValue = activeOrders.count { !it.isPaid }
+        val collectedRevenueValue = activeOrders.filter { it.isPaid }.sumOf { it.total }
         
         // Extract quantity from product string for total quantity calculation
-        val totalQtyValue = customerOrders.sumOf { order ->
+        val totalQtyValue = activeOrders.sumOf { order ->
             val quantityMatch = Regex("x(\\d+)").find(order.product)
             quantityMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
         }
@@ -387,7 +414,7 @@ class Today : AppCompatActivity() {
         var alkalineQtyValue = 0
         var mineralQtyValue = 0
         
-        customerOrders.forEach { order ->
+        activeOrders.forEach { order ->
             val quantityMatch = Regex("x(\\d+)").find(order.product)
             val quantity = quantityMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
             
@@ -824,12 +851,15 @@ class Today : AppCompatActivity() {
     }
 
     private fun updateSummary() {
-        val totalRevenue = customerOrders.sumOf { it.total }
+        // Filter out cancelled orders for all calculations
+        val activeOrders = customerOrders.filter { it.status != "Cancelled" }
+        
+        val totalRevenue = activeOrders.sumOf { it.total }
         
         // Extract quantity from product string for total quantity calculation
         // Handle both single items and multiple items (newline-separated)
         // Count the number of gallons (not just quantities)
-        val totalQty = customerOrders.sumOf { order ->
+        val totalQty = activeOrders.sumOf { order ->
             val productLines = if (order.product.contains("\n")) {
                 order.product.split("\n").filter { it.isNotBlank() }
             } else {
@@ -855,7 +885,7 @@ class Today : AppCompatActivity() {
         var alkalineQty = 0
         var mineralQty = 0
         
-        customerOrders.forEach { order ->
+        activeOrders.forEach { order ->
             val productLines = if (order.product.contains("\n")) {
                 order.product.split("\n").filter { it.isNotBlank() }
             } else {
@@ -1558,5 +1588,47 @@ class Today : AppCompatActivity() {
         println("DEBUG: calculateAccessoryPrice - Accessory: '$accessory', Price: $price, Quantity: $quantity, Total: $total")
         println("DEBUG: calculateAccessoryPrice - Available accessories: ${accessoryPrices.keys}")
         return total
+    }
+    
+    private fun playNotificationSound() {
+        try {
+            // Get the default notification sound
+            val notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val ringtone = RingtoneManager.getRingtone(applicationContext, notificationUri)
+            
+            // Play the notification sound
+            ringtone?.play()
+            
+            println("DEBUG: Notification sound played for new order")
+        } catch (e: Exception) {
+            println("DEBUG: Error playing notification sound: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+    
+    private fun checkForNewOrders() {
+        // Only check for customer interface orders for notifications
+        val customerInterfaceOrders = customerOrders.filter { it.isFromCustomerInterface }
+        val currentOrderCount = customerInterfaceOrders.size
+        
+        // Check if there are new customer interface orders (count increased)
+        if (currentOrderCount > previousOrderCount && previousOrderCount > 0) {
+            val newOrderCount = currentOrderCount - previousOrderCount
+            println("DEBUG: New customer interface orders detected! Count increased by $newOrderCount")
+            
+            // Play notification sound
+            playNotificationSound()
+            
+            // Show a toast notification
+            Toast.makeText(this, "New customer order received!", Toast.LENGTH_SHORT).show()
+        }
+        
+        // Update the previous count
+        previousOrderCount = currentOrderCount
+    }
+    
+    // Public method to refresh orders (can be called from other activities)
+    fun refreshOrders() {
+        loadTodaysOrders()
     }
 }

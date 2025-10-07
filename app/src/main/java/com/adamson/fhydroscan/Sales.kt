@@ -102,7 +102,8 @@ class Sales : AppCompatActivity() {
     }
 
     private fun showCalendarSelectorDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_calendar_selector, null)
+        try {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_calendar_selector, null)
         
         val periodTypeSpinner = dialogView.findViewById<AutoCompleteTextView>(R.id.periodTypeSpinner)
         val calendarView = dialogView.findViewById<CalendarView>(R.id.calendarView)
@@ -165,34 +166,49 @@ class Sales : AppCompatActivity() {
         
         // Update selected date display when month changes
         monthSpinner.setOnItemClickListener { _, _, position, _ ->
-            val selectedYear = yearSpinner.text.toString().toInt()
-            val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-            val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
-            
-            // Prevent selecting future months in current year
-            if (selectedYear == currentYear && position > currentMonth) {
-                Toast.makeText(this, "Cannot select future months", Toast.LENGTH_SHORT).show()
-                return@setOnItemClickListener
+            try {
+                val yearText = yearSpinner.text.toString()
+                if (yearText.isNotEmpty()) {
+                    val selectedYear = yearText.toInt()
+                    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                    val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+                    
+                    // Prevent selecting future months in current year
+                    if (selectedYear == currentYear && position > currentMonth) {
+                        Toast.makeText(this, "Cannot select future months", Toast.LENGTH_SHORT).show()
+                        return@setOnItemClickListener
+                    }
+                    
+                    val tempDate = Calendar.getInstance().apply {
+                        set(Calendar.YEAR, selectedYear)
+                        set(Calendar.MONTH, position)
+                        set(Calendar.DAY_OF_MONTH, 1)
+                    }
+                    val currentPeriodType = periodTypeSpinner.text.toString()
+                    updateSelectedDateDisplay(tempDate, currentPeriodType, selectedDateDisplay)
+                }
+            } catch (e: Exception) {
+                // Handle any parsing errors gracefully
+                Toast.makeText(this, "Error updating month selection", Toast.LENGTH_SHORT).show()
             }
-            
-            val tempDate = Calendar.getInstance().apply {
-                set(Calendar.YEAR, selectedYear)
-                set(Calendar.MONTH, position)
-                set(Calendar.DAY_OF_MONTH, 1)
-            }
-            val currentPeriodType = periodTypeSpinner.text.toString()
-            updateSelectedDateDisplay(tempDate, currentPeriodType, selectedDateDisplay)
         }
         
         // Update selected date display when year-only spinner changes
         yearOnlySpinner.setOnItemClickListener { _, _, position, _ ->
-            val tempDate = Calendar.getInstance().apply {
-                set(Calendar.YEAR, years[position].toInt())
-                set(Calendar.MONTH, 0)
-                set(Calendar.DAY_OF_MONTH, 1)
+            try {
+                if (position >= 0 && position < years.size) {
+                    val tempDate = Calendar.getInstance().apply {
+                        set(Calendar.YEAR, years[position].toInt())
+                        set(Calendar.MONTH, 0)
+                        set(Calendar.DAY_OF_MONTH, 1)
+                    }
+                    val currentPeriodType = periodTypeSpinner.text.toString()
+                    updateSelectedDateDisplay(tempDate, currentPeriodType, selectedDateDisplay)
+                }
+            } catch (e: Exception) {
+                // Handle any parsing errors gracefully
+                Toast.makeText(this, "Error updating year selection", Toast.LENGTH_SHORT).show()
             }
-            val currentPeriodType = periodTypeSpinner.text.toString()
-            updateSelectedDateDisplay(tempDate, currentPeriodType, selectedDateDisplay)
         }
         
         // Show initial selected date display
@@ -215,17 +231,50 @@ class Sales : AppCompatActivity() {
             // Update selected date based on period type
             val tempSelectedDate = when (selectedPeriodType) {
                 "Month" -> {
-                    Calendar.getInstance().apply {
-                        set(Calendar.YEAR, yearSpinner.text.toString().toInt())
-                        set(Calendar.MONTH, months.indexOf(monthSpinner.text.toString()))
-                        set(Calendar.DAY_OF_MONTH, 1)
+                    try {
+                        Calendar.getInstance().apply {
+                            val yearText = yearSpinner.text.toString()
+                            val monthText = monthSpinner.text.toString()
+                            
+                            if (yearText.isNotEmpty() && monthText.isNotEmpty()) {
+                                set(Calendar.YEAR, yearText.toInt())
+                                val monthIndex = months.indexOf(monthText)
+                                if (monthIndex >= 0) {
+                                    set(Calendar.MONTH, monthIndex)
+                                } else {
+                                    set(Calendar.MONTH, selectedDate.get(Calendar.MONTH))
+                                }
+                                set(Calendar.DAY_OF_MONTH, 1)
+                            } else {
+                                // Fallback to current selected date
+                                timeInMillis = selectedDate.timeInMillis
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Fallback to current selected date if parsing fails
+                        Calendar.getInstance().apply {
+                            timeInMillis = selectedDate.timeInMillis
+                        }
                     }
                 }
                 "Year" -> {
-                    Calendar.getInstance().apply {
-                        set(Calendar.YEAR, yearOnlySpinner.text.toString().toInt())
-                        set(Calendar.MONTH, 0)
-                        set(Calendar.DAY_OF_MONTH, 1)
+                    try {
+                        Calendar.getInstance().apply {
+                            val yearText = yearOnlySpinner.text.toString()
+                            if (yearText.isNotEmpty()) {
+                                set(Calendar.YEAR, yearText.toInt())
+                                set(Calendar.MONTH, 0)
+                                set(Calendar.DAY_OF_MONTH, 1)
+                            } else {
+                                // Fallback to current selected date
+                                timeInMillis = selectedDate.timeInMillis
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Fallback to current selected date if parsing fails
+                        Calendar.getInstance().apply {
+                            timeInMillis = selectedDate.timeInMillis
+                        }
                     }
                 }
                 else -> {
@@ -254,6 +303,11 @@ class Sales : AppCompatActivity() {
         }
         
         dialog.show()
+        } catch (e: Exception) {
+            // Handle any errors in dialog creation gracefully
+            Toast.makeText(this, "Error opening date selector. Please try again.", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
     }
 
     private fun updateDialogViews(
