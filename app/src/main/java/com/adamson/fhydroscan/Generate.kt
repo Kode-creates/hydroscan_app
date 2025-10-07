@@ -12,6 +12,7 @@ import android.widget.ImageView
 import android.widget.RadioGroup
 import android.widget.AutoCompleteTextView
 import com.google.android.material.textfield.TextInputLayout
+import android.text.InputFilter
 import android.widget.Toast
 import android.widget.TextView
 import android.app.Dialog
@@ -62,6 +63,9 @@ class Generate : AppCompatActivity() {
             generateQRCode()
         }
 
+        // Set up input validation
+        setupInputValidation()
+
         // Set up bottom navigation
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.setOnItemSelectedListener {
@@ -83,9 +87,72 @@ class Generate : AppCompatActivity() {
         }
     }
 
+    private fun setupInputValidation() {
+        // Name input filter: 2-50 characters, no numbers
+        nameInput.filters = arrayOf(
+            InputFilter.LengthFilter(50),
+            InputFilter { source, start, end, dest, dstart, dend ->
+                // Allow only letters, spaces, and common name characters (no numbers)
+                val regex = Regex("[a-zA-Z\\s\\-'.]")
+                for (i in start until end) {
+                    if (!regex.matches(source[i].toString())) {
+                        return@InputFilter ""
+                    }
+                }
+                null
+            }
+        )
+        
+        // Address input filter: 5-100 characters
+        addressInput.filters = arrayOf(InputFilter.LengthFilter(100))
+        
+        // Name text watcher for real-time feedback
+        nameInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val text = s.toString()
+                when {
+                    text.length < 2 && text.isNotEmpty() -> {
+                        nameInput.error = "Name must be at least 2 characters"
+                    }
+                    text.length > 50 -> {
+                        nameInput.error = "Name must be 50 characters or less"
+                    }
+                    text.any { it.isDigit() } -> {
+                        nameInput.error = "Name must not contain numbers"
+                    }
+                    else -> {
+                        nameInput.error = null
+                    }
+                }
+            }
+        })
+        
+        // Address text watcher for real-time feedback
+        addressInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val text = s.toString()
+                when {
+                    text.length < 5 && text.isNotEmpty() -> {
+                        addressInput.error = "Address must be at least 5 characters"
+                    }
+                    text.length > 100 -> {
+                        addressInput.error = "Address must be 100 characters or less"
+                    }
+                    else -> {
+                        addressInput.error = null
+                    }
+                }
+            }
+        })
+    }
+
     private fun generateQRCode() {
-        val name = nameInput.text.toString()
-        val address = addressInput.text.toString()
+        val name = nameInput.text.toString().trim()
+        val address = addressInput.text.toString().trim()
         val unit = unitSpinner.text.toString()
         val waterType = when (waterTypeGroup.checkedRadioButtonId) {
             R.id.mineralRadio -> "M"
@@ -93,10 +160,40 @@ class Generate : AppCompatActivity() {
             else -> ""
         }
 
-        // Validate inputs (all required except water type)
-        if (name.isEmpty() || address.isEmpty() || unit.isBlank()) {
-            Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show()
-            return
+        // Validate inputs with detailed error messages
+        when {
+            name.isEmpty() -> {
+                Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show()
+                return
+            }
+            name.length < 2 -> {
+                Toast.makeText(this, "Name must be at least 2 characters", Toast.LENGTH_SHORT).show()
+                return
+            }
+            name.length > 50 -> {
+                Toast.makeText(this, "Name must be 50 characters or less", Toast.LENGTH_SHORT).show()
+                return
+            }
+            name.any { it.isDigit() } -> {
+                Toast.makeText(this, "Name must not contain numbers", Toast.LENGTH_SHORT).show()
+                return
+            }
+            address.isEmpty() -> {
+                Toast.makeText(this, "Please enter an address", Toast.LENGTH_SHORT).show()
+                return
+            }
+            address.length < 5 -> {
+                Toast.makeText(this, "Address must be at least 5 characters", Toast.LENGTH_SHORT).show()
+                return
+            }
+            address.length > 100 -> {
+                Toast.makeText(this, "Address must be 100 characters or less", Toast.LENGTH_SHORT).show()
+                return
+            }
+            unit.isBlank() -> {
+                Toast.makeText(this, "Please select a gallon type", Toast.LENGTH_SHORT).show()
+                return
+            }
         }
 
         // Build payload

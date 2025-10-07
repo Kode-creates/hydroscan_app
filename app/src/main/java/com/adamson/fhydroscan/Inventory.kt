@@ -41,6 +41,9 @@ class Inventory : AppCompatActivity() {
 
         // Initialize database helper
         inventoryDatabaseHelper = InventoryDatabaseHelper(this)
+        
+        // Ensure database is properly initialized
+        inventoryDatabaseHelper.ensureDatabaseInitialized()
 
         // Initialize views
         initializeViews()
