@@ -28,9 +28,9 @@ class Login : AppCompatActivity() {
         
         usernameInput = findViewById(R.id.username)
         passwordInput = findViewById(R.id.password)
-        loginButton = findViewById(R.id.btlogin)
+        loginButton = findViewById(R.id.loginButton)
         signupButton = findViewById(R.id.btsignup)
-        forgotPasswordText = findViewById(R.id.forgotPassword)
+        forgotPasswordText = findViewById(R.id.forgotPasswordLink)
 
         loginButton.setOnClickListener {
             val username = usernameInput.text.toString().trim()
@@ -39,6 +39,18 @@ class Login : AppCompatActivity() {
             when {
                 username.isEmpty() || password.isEmpty() -> {
                     Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                }
+                username.length < 4 -> {
+                    Toast.makeText(this, "Username must be at least 4 characters", Toast.LENGTH_SHORT).show()
+                }
+                username.length > 25 -> {
+                    Toast.makeText(this, "Username must be 25 characters or less", Toast.LENGTH_SHORT).show()
+                }
+                password.length < 8 -> {
+                    Toast.makeText(this, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show()
+                }
+                password.length > 50 -> {
+                    Toast.makeText(this, "Password must be 50 characters or less", Toast.LENGTH_SHORT).show()
                 }
                 else -> {
                     // Check credentials in database
@@ -108,11 +120,26 @@ class Login : AppCompatActivity() {
                 username.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty() -> {
                     Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 }
+                username.length < 4 -> {
+                    Toast.makeText(this, "Username must be at least 4 characters", Toast.LENGTH_SHORT).show()
+                }
+                username.length > 25 -> {
+                    Toast.makeText(this, "Username must be 25 characters or less", Toast.LENGTH_SHORT).show()
+                }
+                newPassword.length < 8 -> {
+                    Toast.makeText(this, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show()
+                }
+                newPassword.length > 50 -> {
+                    Toast.makeText(this, "Password must be 50 characters or less", Toast.LENGTH_SHORT).show()
+                }
+                confirmPassword.length < 8 -> {
+                    Toast.makeText(this, "Confirm password must be at least 8 characters", Toast.LENGTH_SHORT).show()
+                }
+                confirmPassword.length > 50 -> {
+                    Toast.makeText(this, "Confirm password must be 50 characters or less", Toast.LENGTH_SHORT).show()
+                }
                 newPassword != confirmPassword -> {
                     Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                }
-                newPassword.length < 6 -> {
-                    Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
                 }
                 !databaseHelper.isUsernameExists(username) -> {
                     Toast.makeText(this, "Username does not exist", Toast.LENGTH_SHORT).show()

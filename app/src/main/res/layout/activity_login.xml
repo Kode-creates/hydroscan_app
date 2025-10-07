@@ -53,6 +53,7 @@
                 android:paddingLeft="20dp"
                 android:inputType="text"
                 android:textSize="12sp"
+                android:maxLength="25"
                 android:singleLine="true"/>
 
             <EditText
@@ -67,10 +68,11 @@
                 android:textColor="#000000"
                 android:paddingLeft="20dp"
                 android:inputType="textPassword"
+                android:maxLength="50"
                 android:singleLine="true"/>
 
             <TextView
-                android:id="@+id/forgotPassword"
+                android:id="@+id/forgotPasswordLink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Forgot Password"
@@ -95,7 +97,7 @@
                 android:textColor="#1b5692"
                 android:paddingStart="30dp"
                 android:paddingEnd="30dp"
-                android:id="@+id/btlogin"/>
+                android:id="@+id/loginButton"/>
 
             <Button
                 android:id="@+id/btsignup"

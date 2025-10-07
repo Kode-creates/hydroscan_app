@@ -184,8 +184,10 @@ class Customer : AppCompatActivity() {
             }
             
             plusButton.setOnClickListener {
-                quantity++
-                quantityDisplay.text = quantity.toString()
+                if (quantity < 30) {
+                    quantity++
+                    quantityDisplay.text = quantity.toString()
+                }
             }
             
             // Create the main dialog first

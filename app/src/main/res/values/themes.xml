@@ -27,13 +27,14 @@
     </style>
 
     <style name="CalendarTheme" parent="Theme.MaterialComponents.DayNight">
-        <item name="colorPrimary">#1b5692</item>
-        <item name="colorPrimaryDark">#154672</item>
-        <item name="colorAccent">#1b5692</item>
-        <item name="android:textColorPrimary">#1b5692</item>
-        <item name="android:textColorSecondary">#666666</item>
-        <item name="android:textColorTertiary">#999999</item>
-        <item name="android:colorControlHighlight">#E3F2FD</item>
-        <item name="android:colorControlActivated">#1b5692</item>
+        <item name="colorPrimary">?android:attr/colorPrimary</item>
+        <item name="colorPrimaryDark">?android:attr/colorPrimaryDark</item>
+        <item name="colorAccent">?android:attr/colorAccent</item>
+        <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
+        <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
+        <item name="android:textColorTertiary">?android:attr/textColorTertiary</item>
+        <item name="android:colorControlHighlight">?android:attr/colorControlHighlight</item>
+        <item name="android:colorControlActivated">?android:attr/colorControlActivated</item>
+        <item name="android:colorBackground">?android:attr/colorBackground</item>
     </style>
 </resources>

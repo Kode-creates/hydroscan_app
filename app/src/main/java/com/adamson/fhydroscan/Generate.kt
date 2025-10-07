@@ -217,8 +217,10 @@ class Generate : AppCompatActivity() {
         }
         
         plusButton.setOnClickListener {
-            quantity++
-            quantityDisplay.text = quantity.toString()
+            if (quantity < 30) {
+                quantity++
+                quantityDisplay.text = quantity.toString()
+            }
         }
         
         // Add button

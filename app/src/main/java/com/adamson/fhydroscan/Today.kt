@@ -190,6 +190,12 @@ class Today : AppCompatActivity() {
         return true
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Refresh today's orders when activity resumes
+        loadTodaysOrders()
+    }
+
     private fun loadTodaysOrders() {
         try {
             // Clear existing orders
@@ -1294,12 +1300,14 @@ class Today : AppCompatActivity() {
             }
             
             itemPlusButton.setOnClickListener {
-                quantity++
-                itemQuantityDisplay.text = quantity.toString()
-                // Update the order item data
-                val existingItem = additionalItems.find { it.view == itemView }
-                existingItem?.quantity = quantity
-                updateTotalPrice()
+                if (quantity < 30) {
+                    quantity++
+                    itemQuantityDisplay.text = quantity.toString()
+                    // Update the order item data
+                    val existingItem = additionalItems.find { it.view == itemView }
+                    existingItem?.quantity = quantity
+                    updateTotalPrice()
+                }
             }
             
             // Update available UOM options based on water type selection

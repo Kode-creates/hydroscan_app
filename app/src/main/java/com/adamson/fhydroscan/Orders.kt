@@ -54,10 +54,21 @@ class Orders : AppCompatActivity() {
         // Setup export button
         setupExportButton()
         
+        // Check for new day and process previous day's data
+        checkAndProcessNewDay()
+        
         // Load order history
         loadOrderHistory()
 
         setupBottomNavigation()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Check for new day and process data when app resumes
+        checkAndProcessNewDay()
+        // Refresh the display
+        loadOrderHistory()
     }
 
     private fun setupRecyclerView() {
@@ -81,35 +92,48 @@ class Orders : AppCompatActivity() {
                 return
             }
 
-            // Get all unique dates with orders
-            val orderDates = orderDatabaseHelper.getOrderDates(currentUserId)
-            println("DEBUG: Found ${orderDates.size} dates with orders")
-
-            if (orderDates.isEmpty()) {
-                showEmptyState("No order history available")
-                return
-            }
-
-            // Create DateOrderSummary for each date
-            val summaries = mutableListOf<DateOrderSummary>()
-            for (date in orderDates) {
-                val summary = createDateOrderSummary(currentUserId, date)
-                if (summary != null) {
-                    summaries.add(summary)
-                }
-            }
-
-            // Update adapter
-            dateCardAdapter.updateDateSummaries(summaries)
+            // First try to load from daily summaries
+            val summaries = orderDatabaseHelper.getDailySummaries(currentUserId)
             
-            // Update month label based on data
-            updateMonthLabel(summaries)
-            
-            // Show/hide empty state
-            if (summaries.isEmpty()) {
-                showEmptyState("No order history available")
-            } else {
+            if (summaries.isNotEmpty()) {
+                // Use stored daily summaries
+                println("DEBUG: Loaded ${summaries.size} daily summaries from database")
+                dateCardAdapter.updateDateSummaries(summaries)
+                updateMonthLabel(summaries)
                 hideEmptyState()
+            } else {
+                // Fallback to creating summaries from raw order data
+                val orderDates = orderDatabaseHelper.getOrderDates(currentUserId)
+                println("DEBUG: Found ${orderDates.size} dates with orders")
+
+                if (orderDates.isEmpty()) {
+                    showEmptyState("No order history available")
+                    return
+                }
+
+                // Create DateOrderSummary for each date
+                val newSummaries = mutableListOf<DateOrderSummary>()
+                for (date in orderDates) {
+                    val summary = createDateOrderSummary(currentUserId, date)
+                    if (summary != null) {
+                        newSummaries.add(summary)
+                        // Store the summary for future use
+                        storeDailySummary(summary)
+                    }
+                }
+
+                // Update adapter
+                dateCardAdapter.updateDateSummaries(newSummaries)
+                
+                // Update month label based on data
+                updateMonthLabel(newSummaries)
+                
+                // Show/hide empty state
+                if (newSummaries.isEmpty()) {
+                    showEmptyState("No order history available")
+                } else {
+                    hideEmptyState()
+                }
             }
 
         } catch (e: Exception) {
@@ -381,6 +405,8 @@ class Orders : AppCompatActivity() {
             initialDate.get(Calendar.MONTH),
             initialDate.get(Calendar.DAY_OF_MONTH)
         )
+        // Restrict to current date and earlier
+        datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
     }
 
@@ -546,5 +572,133 @@ class Orders : AppCompatActivity() {
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    // Store daily summary to database
+    private fun storeDailySummary(summary: DateOrderSummary) {
+        try {
+            val currentUserId = sharedPreferences.getString("current_user_id", "") ?: ""
+            if (currentUserId.isEmpty()) {
+                println("DEBUG: No user ID found for storing daily summary")
+                return
+            }
+
+            val success = orderDatabaseHelper.storeDailySummary(
+                currentUserId,
+                summary.date,
+                summary.displayDate,
+                summary.totalUom,
+                summary.totalSales,
+                summary.totalOrders
+            )
+
+            if (success) {
+                println("DEBUG: Daily summary stored successfully for ${summary.date}")
+            } else {
+                println("DEBUG: Failed to store daily summary for ${summary.date}")
+            }
+
+        } catch (e: Exception) {
+            println("DEBUG: Error storing daily summary: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    // Process and store daily order data for a specific date
+    fun processDailyOrderData(date: String) {
+        try {
+            val currentUserId = sharedPreferences.getString("current_user_id", "") ?: ""
+            if (currentUserId.isEmpty()) {
+                println("DEBUG: No user ID found for daily data processing")
+                return
+            }
+
+            // Check if summary already exists
+            if (orderDatabaseHelper.hasDailySummary(currentUserId, date)) {
+                println("DEBUG: Daily summary already exists for $date")
+                return
+            }
+
+            // Get all orders for the specified date
+            val orders = orderDatabaseHelper.getOrdersByDate(currentUserId, date)
+            if (orders.isEmpty()) {
+                println("DEBUG: No orders found for date: $date")
+                return
+            }
+
+            // Create daily summary
+            val summary = createDateOrderSummary(currentUserId, date)
+            if (summary != null) {
+                // Store daily summary
+                storeDailySummary(summary)
+                println("DEBUG: Daily summary created for $date: ${summary.totalOrders} orders, ₱${summary.totalSales}, ${summary.totalUom}L")
+                
+                // Refresh the order history display
+                loadOrderHistory()
+            }
+
+        } catch (e: Exception) {
+            println("DEBUG: Error processing daily order data for $date: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    // Process today's orders and prepare for storage
+    fun processTodaysOrders() {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        processDailyOrderData(today)
+    }
+
+    // Check if it's a new day and process previous day's data
+    fun checkAndProcessNewDay() {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val lastProcessedDate = sharedPreferences.getString("last_processed_date", "")
+        
+        if (lastProcessedDate != today) {
+            // Process previous day's data if it exists
+            if (!lastProcessedDate.isNullOrEmpty()) {
+                processDailyOrderData(lastProcessedDate)
+            }
+            
+            // Update last processed date
+            sharedPreferences.edit()
+                .putString("last_processed_date", today)
+                .apply()
+        }
+    }
+
+    // Manual method to process all pending daily data
+    fun processAllPendingDailyData() {
+        try {
+            val currentUserId = sharedPreferences.getString("current_user_id", "") ?: ""
+            if (currentUserId.isEmpty()) {
+                println("DEBUG: No user ID found for processing pending data")
+                return
+            }
+
+            // Get all dates with orders that don't have summaries yet
+            val orderDates = orderDatabaseHelper.getOrderDates(currentUserId)
+            val processedDates = mutableListOf<String>()
+
+            for (date in orderDates) {
+                if (!orderDatabaseHelper.hasDailySummary(currentUserId, date)) {
+                    processDailyOrderData(date)
+                    processedDates.add(date)
+                }
+            }
+
+            if (processedDates.isNotEmpty()) {
+                println("DEBUG: Processed ${processedDates.size} pending daily summaries")
+                showToast("Processed ${processedDates.size} daily summaries")
+            } else {
+                println("DEBUG: No pending daily data to process")
+                showToast("All daily data is up to date")
+            }
+
+        } catch (e: Exception) {
+            println("DEBUG: Error processing pending daily data: ${e.message}")
+            e.printStackTrace()
+            showToast("Error processing daily data")
+        }
     }
 }

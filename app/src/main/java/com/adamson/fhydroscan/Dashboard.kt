@@ -38,6 +38,7 @@ class Dashboard : AppCompatActivity() {
             }
         }
 
+
         findViewById<CardView>(R.id.Sales).setOnClickListener {
             startActivity(Intent(this, Sales::class.java))
         }

@@ -93,6 +93,9 @@ class Cart : AppCompatActivity() {
 
     private fun setupDialogComponents(dialog: Dialog) {
         try {
+            // Store current dialog reference
+            currentDialog = dialog
+            
             // Buttons
             dialog.findViewById<Button>(R.id.pickupDateButton).setOnClickListener { showDatePicker(true) }
             dialog.findViewById<Button>(R.id.deliveryDateButton).setOnClickListener { showDatePicker(false) }
@@ -144,6 +147,8 @@ class Cart : AppCompatActivity() {
             val calendarsContainer = dialog.findViewById<LinearLayout>(R.id.schedulingCalendarsContainer)
             val pickupDateButton = dialog.findViewById<Button>(R.id.pickupDateButton)
             val deliveryDateButton = dialog.findViewById<Button>(R.id.deliveryDateButton)
+            val pickupDateDisplay = dialog.findViewById<TextView>(R.id.pickupDateDisplay)
+            val deliveryDateDisplay = dialog.findViewById<TextView>(R.id.deliveryDateDisplay)
 
             val alpha = if (enabled) 1.0f else 0.5f
             titlesContainer.alpha = alpha
@@ -158,10 +163,18 @@ class Cart : AppCompatActivity() {
             deliveryDateButton.setTextColor(textColor)
             pickupDateButton.setBackgroundColor(backgroundColor)
             deliveryDateButton.setBackgroundColor(backgroundColor)
+
+            // Hide date displays when scheduling is disabled
+            if (!enabled) {
+                pickupDateDisplay.visibility = android.view.View.GONE
+                deliveryDateDisplay.visibility = android.view.View.GONE
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error toggling scheduling enabled state: ${e.message}", e)
         }
     }
+
+    private var currentDialog: Dialog? = null
 
     private fun showDatePicker(isPickup: Boolean) {
         val calendar = Calendar.getInstance()
@@ -187,14 +200,17 @@ class Cart : AppCompatActivity() {
                 }
 
                 val dateString = String.format("%02d-%02d-%04d", month + 1, dayOfMonth, year)
+                val displayDateString = String.format("%02d/%02d/%04d", month + 1, dayOfMonth, year)
+                
                 if (isPickup) {
                     pickupDate = dateString
                 } else {
                     deliveryDate = dateString
                 }
                 
-                // Update the dialog buttons if dialog is still showing
+                // Update the dialog buttons and date displays if dialog is still showing
                 updateDialogDateButtons()
+                updateDateDisplays(displayDateString, isPickup)
             },
             currentYear, currentMonth, currentDay
         )
@@ -218,6 +234,24 @@ class Cart : AppCompatActivity() {
     private fun updateDialogDateButtons() {
         // This method will be called to update any visible dialog buttons
         // For now, we'll store the dates and they'll be updated when dialog is shown again
+    }
+
+    private fun updateDateDisplays(displayDateString: String, isPickup: Boolean) {
+        currentDialog?.let { dialog ->
+            try {
+                if (isPickup) {
+                    val pickupDisplay = dialog.findViewById<TextView>(R.id.pickupDateDisplay)
+                    pickupDisplay.text = "Pick up: $displayDateString"
+                    pickupDisplay.visibility = android.view.View.VISIBLE
+                } else {
+                    val deliveryDisplay = dialog.findViewById<TextView>(R.id.deliveryDateDisplay)
+                    deliveryDisplay.text = "Delivery: $displayDateString"
+                    deliveryDisplay.visibility = android.view.View.VISIBLE
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating date displays: ${e.message}", e)
+            }
+        }
     }
 
 
@@ -377,7 +411,7 @@ class Cart : AppCompatActivity() {
                 
                 AlertDialog.Builder(this)
                     .setTitle("Order Submitted!")
-                    .setMessage("Your order has been successfully submitted.\nOrder Number: $orderNumber")
+                    .setMessage("Your order has been successfully submitted.")
                     .setPositiveButton("OK") { _, _ ->
                         try {
                             // Clear the cart after successful order submission

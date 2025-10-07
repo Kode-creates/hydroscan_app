@@ -286,7 +286,7 @@ class OrderHistory : AppCompatActivity() {
     private fun showCancelConfirmationDialog(order: Order) {
         AlertDialog.Builder(this)
             .setTitle("Cancel Order")
-            .setMessage("Are you sure you want to cancel this order?\n\nOrder #${order.orderNumber}\nTotal: ₱${String.format("%.2f", order.totalAmount)}")
+            .setMessage("Are you sure you want to cancel this order?\n\nTotal: ₱${String.format("%.2f", order.totalAmount)}")
             .setPositiveButton("Yes, Cancel") { _, _ ->
                 cancelOrder(order)
             }

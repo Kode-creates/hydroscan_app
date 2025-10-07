@@ -183,7 +183,7 @@ class ScanE : AppCompatActivity() {
 
         nameValue.text = name
         addressValue.text = address
-        uomValue.text = uom
+        uomValue.text = uom // This already contains the detailed gallon type like "20L Slim", "20L Round", "10L Slim"
         radioMineral.isChecked = true
         radioPaid.isChecked = true // Default to paid
 
@@ -199,8 +199,10 @@ class ScanE : AppCompatActivity() {
         }
 
         plusButton.setOnClickListener {
-            quantity++
-            quantityDisplay.text = quantity.toString()
+            if (quantity < 30) {
+                quantity++
+                quantityDisplay.text = quantity.toString()
+            }
         }
 
         val dialog = AlertDialog.Builder(this)

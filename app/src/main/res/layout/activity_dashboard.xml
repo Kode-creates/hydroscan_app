@@ -251,8 +251,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="10dp"
+                app:cardElevation="8dp"
+                app:cardCornerRadius="16dp"
                 app:cardBackgroundColor="#1b5692">
 
                 <LinearLayout
@@ -261,17 +261,32 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Header Title -->
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <!-- Header Section -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Today's Orders"
-                        android:textSize="14sp"
-                        android:textColor="#fffafa"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="8dp"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
 
-                    <!-- Content Row -->
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Today's Orders"
+                            android:textSize="14sp"
+                            android:textColor="#fffafa"
+                            android:textStyle="bold"/>
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/warrw"
+                            android:tint="#fffafa"
+                            android:alpha="0.7"/>
+                    </LinearLayout>
+
+                    <!-- Content Section -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
@@ -279,51 +294,52 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
 
-                    <!-- Left Side - Orders Count -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:layout_marginEnd="16dp">
-
-                        <TextView
-                            android:id="@+id/todaysOrdersCount"
-                            android:layout_width="wrap_content"
+                        <!-- Left Side - Orders Count -->
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="18sp"
-                            android:textColor="#fffafa"
-                            android:textStyle="bold"/>
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_marginEnd="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:id="@+id/todaysOrdersCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="18sp"
+                                android:textColor="#fffafa"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Orders"
+                                android:textSize="12sp"
+                                android:textColor="#fffafa"
+                                android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+
+                        <!-- Right Side - Customer List -->
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Orders"
-                            android:textSize="12sp"
-                            android:textColor="#fffafa"
-                            android:layout_marginTop="4dp"/>
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="start">
+
+                            <TextView
+                                android:id="@+id/customerListText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="No recent orders"
+                                android:textColor="#fffafa"
+                                android:textSize="12sp"
+                                android:lineSpacingMultiplier="1.4"/>
+                        </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Right Side - Customer List -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="start">
-
-                        <TextView
-                            android:id="@+id/customerListText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="No recent orders"
-                            android:textColor="#fffafa"
-                            android:textSize="12sp"
-                            android:lineSpacingMultiplier="1.4"/>
-                    </LinearLayout>
-                    </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

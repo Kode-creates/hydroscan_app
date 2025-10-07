@@ -51,8 +51,8 @@ class Sales : AppCompatActivity() {
         val customerName: String
     )
 
-    // Generate dummy data for demonstration
-    private val dummyData = generateDummyData()
+    // Empty data list - will be populated from actual data source
+    private val salesData = mutableListOf<SalesData>()
     private var selectedDate = Calendar.getInstance()
     private var selectedPeriodType = "Week"
     private var selectedFromDate: Calendar = Calendar.getInstance()
@@ -107,8 +107,10 @@ class Sales : AppCompatActivity() {
         val periodTypeSpinner = dialogView.findViewById<AutoCompleteTextView>(R.id.periodTypeSpinner)
         val calendarView = dialogView.findViewById<CalendarView>(R.id.calendarView)
         val monthYearSpinnerContainer = dialogView.findViewById<LinearLayout>(R.id.monthYearSpinnerContainer)
+        val yearOnlySpinnerContainer = dialogView.findViewById<LinearLayout>(R.id.yearOnlySpinnerContainer)
         val monthSpinner = dialogView.findViewById<AutoCompleteTextView>(R.id.monthSpinner)
         val yearSpinner = dialogView.findViewById<AutoCompleteTextView>(R.id.yearSpinner)
+        val yearOnlySpinner = dialogView.findViewById<AutoCompleteTextView>(R.id.yearOnlySpinner)
         val selectedDateDisplay = dialogView.findViewById<TextView>(R.id.selectedDateDisplay)
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
         val doneButton = dialogView.findViewById<Button>(R.id.doneButton)
@@ -126,23 +128,29 @@ class Sales : AppCompatActivity() {
         monthSpinner.setAdapter(monthAdapter)
         monthSpinner.setText(months[selectedDate.get(Calendar.MONTH)], false)
         
-        // Setup year spinner
+        // Setup year spinner - only allow past and current years
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        val years = (currentYear - 5..currentYear + 5).map { it.toString() }.toTypedArray()
+        val years = (currentYear - 5..currentYear).map { it.toString() }.toTypedArray()
         val yearAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, years)
         yearSpinner.setAdapter(yearAdapter)
         yearSpinner.setText(selectedDate.get(Calendar.YEAR).toString(), false)
         
-        // Set calendar to current selected date
+        // Setup year-only spinner - only allow past and current years
+        val yearOnlyAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, years)
+        yearOnlySpinner.setAdapter(yearOnlyAdapter)
+        yearOnlySpinner.setText(selectedDate.get(Calendar.YEAR).toString(), false)
+        
+        // Set calendar to current selected date and restrict to current date
         calendarView.date = selectedDate.timeInMillis
+        calendarView.maxDate = System.currentTimeMillis()
         
         // Show/hide appropriate views based on current selection
-        updateDialogViews(selectedPeriodType, calendarView, monthYearSpinnerContainer, monthSpinner, yearSpinner)
+        updateDialogViews(selectedPeriodType, calendarView, monthYearSpinnerContainer, yearOnlySpinnerContainer, monthSpinner, yearSpinner, yearOnlySpinner)
         
         // Update selected date display when period type changes
         periodTypeSpinner.setOnItemClickListener { _, _, position, _ ->
             val tempPeriodType = periodTypes[position]
-            updateDialogViews(tempPeriodType, calendarView, monthYearSpinnerContainer, monthSpinner, yearSpinner)
+            updateDialogViews(tempPeriodType, calendarView, monthYearSpinnerContainer, yearOnlySpinnerContainer, monthSpinner, yearSpinner, yearOnlySpinner)
             updateSelectedDateDisplay(selectedDate, tempPeriodType, selectedDateDisplay)
         }
         
@@ -157,8 +165,18 @@ class Sales : AppCompatActivity() {
         
         // Update selected date display when month changes
         monthSpinner.setOnItemClickListener { _, _, position, _ ->
+            val selectedYear = yearSpinner.text.toString().toInt()
+            val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+            val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+            
+            // Prevent selecting future months in current year
+            if (selectedYear == currentYear && position > currentMonth) {
+                Toast.makeText(this, "Cannot select future months", Toast.LENGTH_SHORT).show()
+                return@setOnItemClickListener
+            }
+            
             val tempDate = Calendar.getInstance().apply {
-                set(Calendar.YEAR, yearSpinner.text.toString().toInt())
+                set(Calendar.YEAR, selectedYear)
                 set(Calendar.MONTH, position)
                 set(Calendar.DAY_OF_MONTH, 1)
             }
@@ -166,13 +184,11 @@ class Sales : AppCompatActivity() {
             updateSelectedDateDisplay(tempDate, currentPeriodType, selectedDateDisplay)
         }
         
-        // Update selected date display when year changes
-        yearSpinner.setOnItemClickListener { _, _, position, _ ->
+        // Update selected date display when year-only spinner changes
+        yearOnlySpinner.setOnItemClickListener { _, _, position, _ ->
             val tempDate = Calendar.getInstance().apply {
                 set(Calendar.YEAR, years[position].toInt())
-                set(Calendar.MONTH, monthSpinner.text.toString().let { monthName ->
-                    months.indexOf(monthName)
-                })
+                set(Calendar.MONTH, 0)
                 set(Calendar.DAY_OF_MONTH, 1)
             }
             val currentPeriodType = periodTypeSpinner.text.toString()
@@ -197,7 +213,7 @@ class Sales : AppCompatActivity() {
             selectedPeriodType = periodTypeSpinner.text.toString()
             
             // Update selected date based on period type
-            selectedDate = when (selectedPeriodType) {
+            val tempSelectedDate = when (selectedPeriodType) {
                 "Month" -> {
                     Calendar.getInstance().apply {
                         set(Calendar.YEAR, yearSpinner.text.toString().toInt())
@@ -207,7 +223,7 @@ class Sales : AppCompatActivity() {
                 }
                 "Year" -> {
                     Calendar.getInstance().apply {
-                        set(Calendar.YEAR, yearSpinner.text.toString().toInt())
+                        set(Calendar.YEAR, yearOnlySpinner.text.toString().toInt())
                         set(Calendar.MONTH, 0)
                         set(Calendar.DAY_OF_MONTH, 1)
                     }
@@ -219,11 +235,20 @@ class Sales : AppCompatActivity() {
                 }
             }
             
+            // Validate that the selected date is not in the future
+            val currentDate = Calendar.getInstance()
+            if (tempSelectedDate.after(currentDate)) {
+                Toast.makeText(this, "Cannot select future dates", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            selectedDate = tempSelectedDate
+            
             // Update the selected date text display
             updateSelectedDateText()
             
             // Generate report with new selection
-                    generateReport(selectedDate)
+            generateReport(selectedDate)
             
             dialog.dismiss()
         }
@@ -235,25 +260,28 @@ class Sales : AppCompatActivity() {
         periodType: String,
         calendarView: CalendarView,
         monthYearSpinnerContainer: LinearLayout,
+        yearOnlySpinnerContainer: LinearLayout,
         monthSpinner: AutoCompleteTextView,
-        yearSpinner: AutoCompleteTextView
+        yearSpinner: AutoCompleteTextView,
+        yearOnlySpinner: AutoCompleteTextView
     ) {
         when (periodType) {
             "Day", "Week" -> {
                 calendarView.visibility = View.VISIBLE
                 monthYearSpinnerContainer.visibility = View.GONE
+                yearOnlySpinnerContainer.visibility = View.GONE
             }
             "Month" -> {
                 calendarView.visibility = View.GONE
                 monthYearSpinnerContainer.visibility = View.VISIBLE
+                yearOnlySpinnerContainer.visibility = View.GONE
                 monthSpinner.visibility = View.VISIBLE
                 yearSpinner.visibility = View.VISIBLE
             }
             "Year" -> {
                 calendarView.visibility = View.GONE
-                monthYearSpinnerContainer.visibility = View.VISIBLE
-                monthSpinner.visibility = View.GONE
-                yearSpinner.visibility = View.VISIBLE
+                monthYearSpinnerContainer.visibility = View.GONE
+                yearOnlySpinnerContainer.visibility = View.VISIBLE
             }
         }
         
@@ -347,32 +375,6 @@ class Sales : AppCompatActivity() {
         println("DEBUG: Set selected date text to: $displayText")
     }
 
-    private fun generateDummyData(): List<SalesData> {
-        val data = mutableListOf<SalesData>()
-        val calendar = Calendar.getInstance()
-        val random = Random()
-        val waterTypes = listOf("Alkaline", "Mineral")
-        val customerNames = listOf("Michelle Obama", "John Smith", "Sarah Johnson", "Mike Wilson", "Lisa Brown")
-
-        // Generate data for the last 365 days
-        repeat(365) {
-            // Generate 2-4 entries per day
-            repeat(random.nextInt(3) + 2) {
-                data.add(
-                    SalesData(
-                        date = calendar.clone() as Calendar,
-                        uom = listOf("20L", "10L")[random.nextInt(2)],
-                        quantity = random.nextInt(10) + 1,
-                        revenue = (random.nextInt(1000) + 500).toDouble(),
-                        waterType = waterTypes[random.nextInt(2)],
-                        customerName = customerNames[random.nextInt(customerNames.size)]
-                    )
-                )
-            }
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
-        }
-        return data
-    }
 
     private fun generateReport(selectedDate: Calendar) {
         val reportType = when (selectedPeriodType) {
@@ -427,7 +429,7 @@ class Sales : AppCompatActivity() {
             }
         }
 
-        return dummyData.filter { 
+        return salesData.filter { 
             it.date.timeInMillis >= startDate.timeInMillis && 
             it.date.timeInMillis < endDate.timeInMillis 
         }
@@ -435,6 +437,16 @@ class Sales : AppCompatActivity() {
 
 
     private fun updateStatistics(data: List<SalesData>) {
+        if (data.isEmpty()) {
+            // Show empty/zero values when no data
+            totalRevenue.text = "₱0.00"
+            totalQuantity.text = "0"
+            totalUom.text = "0L"
+            mostOrderedWater.text = "No Data"
+            unpaidInfo.text = "0 qty, No customers"
+            return
+        }
+        
         val totalRev = data.sumOf { it.revenue }
         val totalQty = data.sumOf { it.quantity }
         val totalUomValue = data.sumOf { it.uom.replace("L", "").toIntOrNull() ?: 0 }
@@ -811,6 +823,8 @@ class Sales : AppCompatActivity() {
             initialDate.get(Calendar.MONTH),
             initialDate.get(Calendar.DAY_OF_MONTH)
         )
+        // Restrict to current date and earlier
+        datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
     }
 
@@ -834,7 +848,7 @@ class Sales : AppCompatActivity() {
             val toDateStr = dateFormat.format(selectedToDate.time)
             
             // Filter data by date range
-            val filteredData = dummyData.filter { sale ->
+            val filteredData = salesData.filter { sale ->
                 val saleDateStr = dateFormat.format(sale.date.time)
                 saleDateStr >= fromDateStr && saleDateStr <= toDateStr
             }.sortedBy { it.date }

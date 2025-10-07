@@ -159,8 +159,26 @@ class Setting_C : AppCompatActivity() {
                     newPhoneNumber.isEmpty() || newFullName.isEmpty() || newAddress.isEmpty() -> {
                         showToast("Please fill in all fields")
                     }
-                    !isValidPhoneNumber(newPhoneNumber) -> {
-                        showToast("Please enter a valid phone number")
+                    newPhoneNumber.length != 10 -> {
+                        showToast("Phone number must be exactly 10 digits")
+                    }
+                    !newPhoneNumber.all { it.isDigit() } -> {
+                        showToast("Phone number must contain only numbers")
+                    }
+                    newFullName.length < 2 -> {
+                        showToast("Name must be at least 2 characters")
+                    }
+                    newFullName.length > 50 -> {
+                        showToast("Name must be 50 characters or less")
+                    }
+                    newFullName.any { it.isDigit() } -> {
+                        showToast("Name must not contain numbers")
+                    }
+                    newAddress.length < 5 -> {
+                        showToast("Address must be at least 5 characters")
+                    }
+                    newAddress.length > 100 -> {
+                        showToast("Address must be 100 characters or less")
                     }
                     userDatabaseHelper.isPhoneNumberTaken(newPhoneNumber, currentUserId) -> {
                         showToast("Phone number is already taken by another user")
@@ -234,8 +252,15 @@ class Setting_C : AppCompatActivity() {
     }
 
     private fun isValidPhoneNumber(phoneNumber: String): Boolean {
-        val cleanNumber = phoneNumber.replace(Regex("[^0-9]"), "")
-        return cleanNumber.length >= 10 && cleanNumber.length <= 15
+        return phoneNumber.length == 10 && phoneNumber.all { it.isDigit() }
+    }
+    
+    private fun isValidName(name: String): Boolean {
+        return name.length in 2..50 && name.all { it.isLetter() || it.isWhitespace() }
+    }
+    
+    private fun isValidAddress(address: String): Boolean {
+        return address.length in 5..100
     }
 
     private fun performLogout() {

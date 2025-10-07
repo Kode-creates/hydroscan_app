@@ -158,7 +158,7 @@ class ScanC : AppCompatActivity() {
 
         nameValue.text = name
         addressValue.text = address
-        uomValue.text = uom
+        uomValue.text = uom // This already contains the detailed gallon type like "20L Slim", "20L Round", "10L Slim"
         radioMineral.isChecked = true
 
         // Quantity counter
@@ -173,8 +173,10 @@ class ScanC : AppCompatActivity() {
         }
 
         plusButton.setOnClickListener {
-            quantity++
-            quantityDisplay.text = quantity.toString()
+            if (quantity < 30) {
+                quantity++
+                quantityDisplay.text = quantity.toString()
+            }
         }
 
         val dialog = AlertDialog.Builder(this)

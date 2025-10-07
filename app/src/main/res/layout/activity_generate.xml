@@ -8,6 +8,16 @@
     android:background="#fffafa"
     tools:context=".Generate">
 
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toTopOf="@+id/bottomNav">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
     <!-- Logo and App Name -->
     <ImageView
         android:id="@+id/logo"
@@ -115,97 +125,87 @@
                 android:textSize="10sp"
                 android:layout_marginTop="10dp"/>
 
-            <!-- Unit and Water Type Row -->
+            <!-- Gallon Type Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
+                android:gravity="center"
                 android:layout_marginTop="16dp">
 
-                <!-- Unit of Measure -->
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:text="Gallon Type (UOM)*"
+                    android:textColor="#1b5692"
+                    android:textSize="9sp"
+                    android:textStyle="bold"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gallon Type (UOM)*"
-                android:textColor="#1b5692"
-                android:textSize="9sp"
-                android:textStyle="bold"/>
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/unitDropdownLayout"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="Select"
+                    app:boxStrokeColor="#1b5692"
+                    app:hintTextColor="#1b5692"
+                    app:startIconTint="#1b5692"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/unitDropdownLayout"
-                        android:layout_width="120dp"
+                    <AutoCompleteTextView
+                        android:id="@+id/unitSpinner"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginLeft="13dp"
-                        android:layout_marginRight="6dp"
-                        android:hint="Select"
-                        app:boxStrokeColor="#1b5692"
-                        app:hintTextColor="#1b5692"
-                        app:startIconTint="#1b5692"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+                        android:textColor="#1b5692"
+                        android:textSize="9sp"
+                        android:inputType="none"
+                        android:focusable="false" />
 
-                        <AutoCompleteTextView
-                            android:id="@+id/unitSpinner"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="#1b5692"
-                            android:textSize="9sp"
-                            android:inputType="none"
-                            android:focusable="false" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
 
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-
-                <!-- Water Type -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Water Type Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Water type"
-                android:textSize="9sp"
-                android:textColor="#1b5692"
-                android:textStyle="bold"/>
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginTop="16dp">
 
-                    <RadioGroup
-                        android:id="@+id/waterTypeGroup"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Water type"
+                    android:textSize="9sp"
+                    android:textColor="#1b5692"
+                    android:textStyle="bold"/>
+
+                <RadioGroup
+                    android:id="@+id/waterTypeGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <RadioButton
+                        android:id="@+id/mineralRadio"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="4dp">
+                        android:text="M"
+                        android:textSize="9sp"
+                        android:textColor="#1b5692"
+                        android:buttonTint="#1b5692"
+                        android:layout_marginEnd="10dp"/>
 
-                        <RadioButton
-                            android:id="@+id/mineralRadio"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="M"
-                            android:textSize="9sp"
-                            android:textColor="#1b5692"
-                            android:buttonTint="#1b5692"
-                            android:layout_marginEnd="10dp"/>
-
-                        <RadioButton
-                            android:id="@+id/alkalineRadio"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="A"
-                            android:textColor="#1b5692"
-                            android:buttonTint="#1b5692"
-                            android:textSize="9sp" />
-                    </RadioGroup>
-                </LinearLayout>
+                    <RadioButton
+                        android:id="@+id/alkalineRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="A"
+                        android:textColor="#1b5692"
+                        android:buttonTint="#1b5692"
+                        android:textSize="9sp" />
+                </RadioGroup>
             </LinearLayout>
 
             <!-- Generate Button -->
@@ -224,6 +224,10 @@
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

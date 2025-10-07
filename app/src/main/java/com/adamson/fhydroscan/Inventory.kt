@@ -172,7 +172,12 @@ class Inventory : AppCompatActivity() {
         saveButton.setOnClickListener {
             val newQuantity = quantityInput.text.toString().toIntOrNull()
             if (newQuantity == null || newQuantity < 0) {
-                Toast.makeText(this, "Please enter a valid quantity", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter a valid quantity (0-5000)", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            if (newQuantity > 5000) {
+                Toast.makeText(this, "Maximum quantity allowed is 5000", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
